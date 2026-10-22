@@ -10,6 +10,7 @@ import {
   createAdminHandbook,
   updateAdminHandbook,
   uploadAdminAudio,
+  uploadPageImageToBlob,
   convertAdminPptx,
   deleteAdminHandbook
 } from './api.js';
@@ -594,10 +595,34 @@ async function handleFilesUpload(files) {
     syncHandbookToUI();
   }
 
+  // ── Upload each new page image to Vercel Blob (one request per image) ──────
+  // This avoids sending huge base64 payloads in a single JSON request which
+  // would exceed Vercel's 4.5MB serverless function body limit.
+  const handbookId = adminState.handbook.id;
+  let blobUploaded = 0;
+
+  for (let i = 0; i < newPages.length; i++) {
+    const page = newPages[i];
+    if (page.dataUrl && page.dataUrl.startsWith('data:image/')) {
+      showToast(`Mengunggah slide ${i + 1} dari ${newPages.length} ke cloud...`);
+      const blobUrl = await uploadPageImageToBlob(handbookId, page.id, page.dataUrl);
+      if (blobUrl) {
+        page.imageUrl = blobUrl;
+        delete page.dataUrl; // remove heavy base64 — only URL stored
+        blobUploaded++;
+      }
+      // If upload failed, keep dataUrl so it still shows in UI (server will retry on save)
+    }
+  }
+
+  if (blobUploaded > 0) {
+    showToast(`${blobUploaded} gambar berhasil diunggah ke cloud CDN.`);
+  }
+
   adminState.handbook.pages = adminState.handbook.pages || [];
   adminState.handbook.pages.push(...newPages);
 
-  showToast(`Menyimpan ${newPages.length} slide ke database...`);
+  showToast(`Menyimpan metadata ${newPages.length} slide...`);
   await autoSaveHandbook();
   renderPagesGrid();
   checkOrientationAlert();

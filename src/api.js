@@ -288,6 +288,48 @@ export async function uploadAdminAudio(file) {
   });
 }
 
+/**
+ * Upload a single page image (as base64 dataUrl) directly to Vercel Blob.
+ * Sends one image per request to stay under Vercel's 4.5MB serverless limit.
+ * Returns { imageUrl } on success, null on failure (caller keeps dataUrl as fallback).
+ */
+export async function uploadPageImageToBlob(handbookId, pageId, dataUrl) {
+  const token = getAdminToken();
+  if (!token) return null;
+
+  try {
+    // Convert base64 dataUrl to Blob
+    const match = dataUrl.match(/^data:(image\/\w+);base64,(.+)$/);
+    if (!match) return null;
+
+    const mimeType = match[1];
+    const ext = mimeType === 'image/jpeg' ? 'jpg' : mimeType.split('/')[1] || 'jpg';
+    const binary = atob(match[2]);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mimeType });
+
+    const formData = new FormData();
+    formData.append('image', blob, `${pageId}.${ext}`);
+    formData.append('handbookId', handbookId);
+    formData.append('pageId', pageId);
+
+    const res = await fetch(`${API_BASE}/admin/upload-image`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data.imageUrl || null;
+    }
+  } catch (e) {
+    console.warn('[uploadPageImageToBlob] Failed:', e.message);
+  }
+  return null;
+}
+
 export async function convertAdminPptx(file) {
   const token = getAdminToken();
   try {

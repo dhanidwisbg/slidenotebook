@@ -1,4 +1,22 @@
 {
+  "functions": {
+    "api/admin/handbooks.js": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "api/admin/handbooks/[id].js": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "api/admin/upload-audio.js": {
+      "maxDuration": 30,
+      "memory": 512
+    },
+    "api/admin/upload-image.js": {
+      "maxDuration": 30,
+      "memory": 512
+    }
+  },
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/read", "destination": "/read.html" }
