@@ -252,6 +252,78 @@ app.post('/api/admin/upload-audio', requireAdminAuth, (req, res) => {
 });
 
 // ============================================================================
+// SINGLE IMAGE UPLOAD (Admin Only - Per-page upload to Vercel Blob)
+// Called one image at a time from client to stay under serverless size limits
+// ============================================================================
+const imageStorage = multer.memoryStorage(); // use memory for immediate re-upload
+const imageUpload = multer({
+  storage: imageStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB per image
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Hanya file gambar yang diizinkan.'));
+    }
+  }
+});
+
+app.post('/api/admin/upload-image', requireAdminAuth, (req, res) => {
+  imageUpload.single('image')(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || 'Gagal mengunggah gambar.' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'Tidak ada file gambar yang diunggah.' });
+    }
+
+    const handbookId = req.body.handbookId;
+    const pageId = req.body.pageId;
+
+    if (!handbookId || !pageId) {
+      return res.status(400).json({ error: 'handbookId dan pageId diperlukan.' });
+    }
+
+    const ext = path.extname(req.file.originalname).toLowerCase().replace('.', '') || 'jpg';
+    let imageUrl;
+
+    if (BLOB_TOKEN) {
+      // Upload to Vercel Blob
+      try {
+        const filename = `pages/${handbookId}/${pageId}.${ext}`;
+        const blob = await put(filename, req.file.buffer, {
+          access: 'public',
+          token: BLOB_TOKEN,
+          contentType: req.file.mimetype,
+          allowOverwrite: true,
+          addRandomSuffix: false
+        });
+        imageUrl = blob.url;
+      } catch (blobErr) {
+        console.warn('[Storage] Vercel Blob image upload failed, fallback to local:', blobErr.message);
+        // Fallback: save locally
+        const hbDir = path.join(UPLOADS_DIR, 'handbooks', handbookId);
+        if (!fs.existsSync(hbDir)) fs.mkdirSync(hbDir, { recursive: true });
+        const filename = `${pageId}.${ext}`;
+        fs.writeFileSync(path.join(hbDir, filename), req.file.buffer);
+        imageUrl = `/uploads/handbooks/${handbookId}/${filename}`;
+      }
+    } else {
+      // Local storage
+      const hbDir = path.join(UPLOADS_DIR, 'handbooks', handbookId);
+      if (!fs.existsSync(hbDir)) fs.mkdirSync(hbDir, { recursive: true });
+      const filename = `${pageId}.${ext}`;
+      fs.writeFileSync(path.join(hbDir, filename), req.file.buffer);
+      imageUrl = `/uploads/handbooks/${handbookId}/${filename}`;
+    }
+
+    res.json({ success: true, imageUrl, pathname: `pages/${handbookId}/${pageId}.${ext}` });
+  });
+});
+
+
+
+// ============================================================================
 // PPT / PPTX CONVERSION (Admin Only - Native Server Conversion to PDF)
 // ============================================================================
 const pptUploadsDir = path.join(UPLOADS_DIR, 'ppt');
