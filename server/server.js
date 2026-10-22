@@ -31,8 +31,8 @@ if (!fs.existsSync(HANDBOOKS_FILE)) {
 
 // Middleware
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: '60mb' }));
-app.use(express.urlencoded({ extended: true, limit: '60mb' }));
+app.use(express.json({ limit: '150mb' }));
+app.use(express.urlencoded({ extended: true, limit: '150mb' }));
 app.use(cookieParser());
 app.use('/uploads', express.static(UPLOADS_DIR));
 
@@ -480,6 +480,15 @@ app.get('/api/public/handbook/:id', (req, res) => {
     initialVolume: handbook.initialVolume,
     updatedAt: handbook.updatedAt
   });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Ukuran payload melebihi batas server (150 MB).' });
+  }
+  console.error('Server Internal Error:', err);
+  res.status(500).json({ error: err.message || 'Kesalahan internal server.' });
 });
 
 app.listen(PORT, () => {

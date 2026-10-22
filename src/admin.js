@@ -550,7 +550,9 @@ async function handleFilesUpload(files) {
 
       // Fetch the converted PDF from server
       const pdfBlob = await fetch(convertRes.pdfUrl).then((r) => r.blob());
-      const extracted = await convertPdfToPages(pdfBlob);
+      const extracted = await convertPdfToPages(pdfBlob, (current, total) => {
+        showToast(`Mengekstrak slide ${current} dari ${total}...`);
+      });
       newPages.push(...extracted);
       showToast(`Berhasil mengekstrak ${extracted.length} slide dari ${pptFile.name}!`);
     } catch (err) {
@@ -559,10 +561,10 @@ async function handleFilesUpload(files) {
     }
   }
 
-  // 2. Compress images to max 1800 px
+  // 2. Compress images to max 1600 px
   for (const imgFile of images) {
     try {
-      const page = await processImageFile(imgFile, 1800, 0.88);
+      const page = await processImageFile(imgFile, 1600, 0.82);
       newPages.push(page);
     } catch (err) {
       console.error(err);
@@ -574,7 +576,9 @@ async function handleFilesUpload(files) {
   for (const pdfFile of pdfs) {
     try {
       showToast(`Mengekstrak PDF: ${pdfFile.name}...`);
-      const extracted = await convertPdfToPages(pdfFile);
+      const extracted = await convertPdfToPages(pdfFile, (current, total) => {
+        showToast(`Mengekstrak slide ${current} dari ${total} (${pdfFile.name})...`);
+      });
       newPages.push(...extracted);
     } catch (err) {
       console.error(err);
@@ -593,6 +597,7 @@ async function handleFilesUpload(files) {
   adminState.handbook.pages = adminState.handbook.pages || [];
   adminState.handbook.pages.push(...newPages);
 
+  showToast(`Menyimpan ${newPages.length} slide ke database...`);
   await autoSaveHandbook();
   renderPagesGrid();
   checkOrientationAlert();

@@ -94,6 +94,33 @@ export async function checkAdminAuth() {
   };
 }
 
+// Safely set item in localStorage without throwing QuotaExceededError
+function safeSetLocalStorage(key, value) {
+  try {
+    const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+    localStorage.setItem(key, serialized);
+  } catch (err) {
+    console.warn(`[localStorage] Quota exceeded for "${key}". Stripping image data for safety.`);
+    try {
+      if (Array.isArray(value)) {
+        const stripped = value.map(h => ({
+          ...h,
+          pages: (h.pages || []).map(p => ({ ...p, dataUrl: '' }))
+        }));
+        localStorage.setItem(key, JSON.stringify(stripped));
+      } else if (value && typeof value === 'object') {
+        const stripped = {
+          ...value,
+          pages: (value.pages || []).map(p => ({ ...p, dataUrl: '' }))
+        };
+        localStorage.setItem(key, JSON.stringify(stripped));
+      }
+    } catch (e2) {
+      console.warn('[localStorage] Skipping cache save due to storage limit.');
+    }
+  }
+}
+
 // Helper to get fallback handbooks from static JSON or localStorage
 async function getFallbackHandbooks() {
   const local = localStorage.getItem('hfb_handbooks');
@@ -106,7 +133,7 @@ async function getFallbackHandbooks() {
     const res = await fetch('/data/handbooks.json');
     if (res.ok) {
       const data = await res.json();
-      localStorage.setItem('hfb_handbooks', JSON.stringify(data));
+      safeSetLocalStorage('hfb_handbooks', data);
       return data;
     }
   } catch (e) {}
@@ -169,7 +196,9 @@ export async function createAdminHandbook(payload) {
       body: JSON.stringify(payload)
     });
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      safeSetLocalStorage('hfb_handbook_default', data);
+      return data;
     }
   } catch (e) {}
 
@@ -183,8 +212,8 @@ export async function createAdminHandbook(payload) {
   };
   const list = await getFallbackHandbooks();
   list.unshift(newHb);
-  localStorage.setItem('hfb_handbooks', JSON.stringify(list));
-  localStorage.setItem('hfb_handbook_default', JSON.stringify(newHb));
+  safeSetLocalStorage('hfb_handbooks', list);
+  safeSetLocalStorage('hfb_handbook_default', newHb);
   return newHb;
 }
 
@@ -201,10 +230,18 @@ export async function updateAdminHandbook(id, payload) {
     });
     if (res.ok) {
       const data = await res.json();
-      localStorage.setItem('hfb_handbook_default', JSON.stringify(data));
+      safeSetLocalStorage('hfb_handbook_default', data);
       return data;
+    } else {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Server error: ${res.status}`);
     }
-  } catch (e) {}
+  } catch (e) {
+    if (e.message && e.message.startsWith('Server error')) {
+      throw e;
+    }
+    console.warn('Backend update failed, attempting local fallback:', e);
+  }
 
   // Fallback for Vercel
   const list = await getFallbackHandbooks();
@@ -220,8 +257,8 @@ export async function updateAdminHandbook(id, payload) {
   } else {
     list.unshift(updated);
   }
-  localStorage.setItem('hfb_handbooks', JSON.stringify(list));
-  localStorage.setItem('hfb_handbook_default', JSON.stringify(updated));
+  safeSetLocalStorage('hfb_handbooks', list);
+  safeSetLocalStorage('hfb_handbook_default', updated);
   return updated;
 }
 
@@ -293,7 +330,7 @@ export async function deleteAdminHandbook(id) {
   // Fallback for Vercel
   let list = await getFallbackHandbooks();
   list = list.filter(h => h.id !== id && h.uniqueSlug !== id);
-  localStorage.setItem('hfb_handbooks', JSON.stringify(list));
+  safeSetLocalStorage('hfb_handbooks', list);
   return { success: true };
 }
 
