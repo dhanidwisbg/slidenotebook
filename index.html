@@ -480,6 +480,183 @@
           padding: 4rem 1rem 3.5rem;
         }
       }
+
+      /* ====================================================================
+         CATALOG SECTION
+         ==================================================================== */
+      .catalog-section {
+        padding: 5rem 1.5rem 6rem;
+        max-width: 1140px;
+        margin: 0 auto;
+      }
+
+      .catalog-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.75rem;
+        min-height: 160px;
+      }
+
+      .catalog-loading {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        padding: 3rem 0;
+      }
+
+      .catalog-spinner {
+        width: 24px;
+        height: 24px;
+        border: 3px solid var(--border-color);
+        border-top-color: var(--accent-primary);
+        border-radius: 50%;
+        animation: spin 0.75s linear infinite;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      .catalog-empty {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .catalog-empty h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+      }
+
+      .catalog-empty p {
+        font-size: 0.9rem;
+        max-width: 420px;
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      /* Handbook Card */
+      .hb-catalog-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .hb-catalog-card:hover {
+        border-color: rgba(56, 189, 248, 0.45);
+        transform: translateY(-6px);
+        box-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.5), 0 0 28px var(--accent-glow);
+      }
+
+      .hb-card-cover {
+        height: 160px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+
+      .hb-card-cover-icon {
+        color: rgba(255, 255, 255, 0.35);
+      }
+
+      .hb-card-lock-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 0.3rem 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #fbbf24;
+        backdrop-filter: blur(8px);
+      }
+
+      .hb-card-page-count {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        padding: 0.25rem 0.6rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(8px);
+      }
+
+      .hb-card-info {
+        padding: 1.25rem 1.5rem 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .hb-card-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text-main);
+        line-height: 1.35;
+        margin: 0;
+        font-family: 'Outfit', sans-serif;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .hb-card-subtitle {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .hb-card-cta {
+        margin-top: auto;
+        padding-top: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent-primary);
+      }
+
+      [data-theme='light'] .hb-catalog-card {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      }
     </style>
   </head>
   <body>
@@ -516,9 +693,9 @@
           </svg>
         </button>
 
-        <!-- CTA Read Handbook -->
-        <a href="/read.html?id=default" class="btn-nav-cta" id="btn-nav-read">
-          <span>Buka Handbook</span>
+        <!-- Scroll to Catalog -->
+        <a href="#catalog" class="btn-nav-cta" id="btn-nav-catalog">
+          <span>Lihat Handbook</span>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
@@ -547,12 +724,12 @@
         </p>
 
         <div class="hero-actions">
-          <a href="/read.html?id=default" class="btn-hero-primary" id="btn-hero-read">
+          <a href="#catalog" class="btn-hero-primary" id="btn-hero-read">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
             </svg>
-            <span>Mulai Membaca Sekarang</span>
+            <span>Jelajahi Handbook</span>
           </a>
 
           <a href="#features" class="btn-hero-secondary">
@@ -577,6 +754,35 @@
           <span class="floating-badge">
             <span>📱</span> Responsif Desktop & Mobile
           </span>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- HANDBOOK CATALOG SECTION                                       -->
+      <!-- ================================================================ -->
+      <section id="catalog" class="catalog-section">
+        <div class="section-header">
+          <span class="section-badge">Koleksi Digital</span>
+          <h2 class="section-title">Handbook Tersedia</h2>
+          <p class="section-desc">Pilih handbook yang ingin Anda baca. Beberapa handbook memerlukan PIN yang dapat diperoleh dari administrator.</p>
+        </div>
+
+        <!-- Catalog Grid (dynamically populated) -->
+        <div id="catalog-grid" class="catalog-grid">
+          <div class="catalog-loading" id="catalog-loading">
+            <div class="catalog-spinner"></div>
+            <span>Memuat koleksi handbook...</span>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="catalog-empty" class="catalog-empty" style="display: none;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--text-faint);">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+            <path d="M6 2v20"/>
+          </svg>
+          <h3>Belum Ada Handbook</h3>
+          <p>Administrator belum mempublikasikan handbook. Silakan hubungi administrator untuk mendapatkan akses.</p>
         </div>
       </section>
 
@@ -713,10 +919,10 @@
         <div class="cta-banner-box">
           <h2 class="cta-title">Siap Membuka Lembaran Handbook?</h2>
           <p class="cta-desc">
-            Mulailah membaca materi dan slide presentasi dengan visual interaktif berkualitas tinggi sekarang juga.
+            Gulir ke atas dan pilih handbook yang ingin Anda baca. Dapatkan PIN dari administrator untuk handbook yang terproteksi.
           </p>
-          <a href="/read.html?id=default" class="btn-hero-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;">
-            <span>Buka Handbook Sekarang ➔</span>
+          <a href="#catalog" class="btn-hero-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;">
+            <span>Lihat Semua Handbook ➔</span>
           </a>
         </div>
       </section>
@@ -784,6 +990,131 @@
           syncThemeUI(next);
         });
       }
+    </script>
+
+    <!-- Catalog Load Script -->
+    <script>
+      async function loadCatalog() {
+        const grid = document.getElementById('catalog-grid');
+        const loadingEl = document.getElementById('catalog-loading');
+        const emptyEl = document.getElementById('catalog-empty');
+
+        try {
+          const res = await fetch('/api/public/handbooks');
+          let handbooks = [];
+          if (res.ok) {
+            handbooks = await res.json();
+          } else {
+            throw new Error('API unavailable');
+          }
+
+          // Hide loading
+          if (loadingEl) loadingEl.style.display = 'none';
+
+          if (!handbooks || handbooks.length === 0) {
+            emptyEl.style.display = 'flex';
+            return;
+          }
+
+          emptyEl.style.display = 'none';
+          handbooks.forEach(hb => renderHandbookCard(grid, hb));
+
+        } catch (err) {
+          // Fallback: try localStorage
+          if (loadingEl) loadingEl.style.display = 'none';
+          const local = localStorage.getItem('hfb_handbooks');
+          if (local) {
+            try {
+              const list = JSON.parse(local);
+              const published = list.filter(h => h.isPublished !== false && h.isActive !== false);
+              if (published.length > 0) {
+                published.forEach(hb => renderHandbookCard(grid, {
+                  id: hb.id,
+                  uniqueSlug: hb.uniqueSlug,
+                  title: hb.title,
+                  subtitle: hb.subtitle,
+                  coverColor: hb.coverColor,
+                  pageCount: (hb.pages || []).length,
+                  hasPassword: !!(hb.readerPassword && hb.readerPassword.trim())
+                }));
+                return;
+              }
+            } catch (e) {}
+          }
+          emptyEl.style.display = 'flex';
+        }
+      }
+
+      function renderHandbookCard(grid, hb) {
+        const slug = hb.uniqueSlug || hb.id;
+        const color = hb.coverColor || '#1e293b';
+        const pageCount = hb.pageCount || 0;
+        const hasPassword = hb.hasPassword;
+
+        const card = document.createElement('a');
+        card.href = `/read.html?id=${slug}`;
+        card.className = 'hb-catalog-card';
+        card.title = hb.title;
+
+        const lockBadgeHtml = hasPassword ? `
+          <div class="hb-card-lock-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Butuh PIN
+          </div>` : '';
+
+        const pageCountBadge = pageCount > 0 ? `<div class="hb-card-page-count">${pageCount} Halaman</div>` : '';
+
+        card.innerHTML = `
+          <div class="hb-card-cover" style="background: linear-gradient(135deg, ${color}, ${adjustColor(color, -30)});">
+            <svg class="hb-card-cover-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+              <path d="M6 2v20"/>
+              <line x1="10" y1="8" x2="17" y2="8"/>
+              <line x1="10" y1="12" x2="17" y2="12"/>
+              <line x1="10" y1="16" x2="15" y2="16"/>
+            </svg>
+            ${lockBadgeHtml}
+            ${pageCountBadge}
+          </div>
+          <div class="hb-card-info">
+            <h3 class="hb-card-title">${escapeHtml(hb.title || 'Untitled')}</h3>
+            ${hb.subtitle ? `<p class="hb-card-subtitle">${escapeHtml(hb.subtitle)}</p>` : ''}
+            <div class="hb-card-cta">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+              ${hasPassword ? 'Buka dengan PIN' : 'Baca Sekarang'}
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      }
+
+      function escapeHtml(str) {
+        const d = document.createElement('div');
+        d.appendChild(document.createTextNode(str));
+        return d.innerHTML;
+      }
+
+      function adjustColor(hex, amount) {
+        try {
+          let r = parseInt(hex.slice(1, 3), 16);
+          let g = parseInt(hex.slice(3, 5), 16);
+          let b = parseInt(hex.slice(5, 7), 16);
+          r = Math.max(0, Math.min(255, r + amount));
+          g = Math.max(0, Math.min(255, g + amount));
+          b = Math.max(0, Math.min(255, b + amount));
+          return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+        } catch (e) { return hex; }
+      }
+
+      // Load catalog on page load
+      loadCatalog();
     </script>
   </body>
 </html>

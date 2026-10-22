@@ -88,7 +88,9 @@ async function initReader() {
   // Extract handbook identifier from URL
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get('id') || 'default';
+  const directKey = urlParams.get('key') || null;
   readerState.slugOrId = id;
+  readerState.directKey = directKey; // store for later use
 
   const savedTheme = localStorage.getItem('hfb_theme') || 'dark';
   syncReaderTheme(savedTheme);
@@ -96,11 +98,11 @@ async function initReader() {
   setupFirstTouchAutoplay();
   setupEventListeners();
 
-  await loadAndDisplayHandbook();
+  await loadAndDisplayHandbook(null, directKey);
 }
 
-async function loadAndDisplayHandbook(password = null) {
-  const result = await fetchPublicHandbook(readerState.slugOrId, password);
+async function loadAndDisplayHandbook(password = null, directKey = null) {
+  const result = await fetchPublicHandbook(readerState.slugOrId, password, directKey || readerState.directKey);
 
   if (result.status === 'error') {
     showError(

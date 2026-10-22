@@ -10,7 +10,8 @@ import {
   createAdminHandbook,
   updateAdminHandbook,
   uploadAdminAudio,
-  convertAdminPptx
+  convertAdminPptx,
+  deleteAdminHandbook
 } from './api.js';
 import {
   naturalSort,
@@ -23,7 +24,8 @@ import { generateSamplePages } from './sample-data.js';
 // Admin State
 const adminState = {
   user: null,
-  handbook: null, // active handbook object from server
+  handbook: null,         // active handbook object from server
+  handbooks: [],          // all handbooks list (summaries)
   draggedCardIndex: null,
   testAudioEl: new Audio()
 };
@@ -93,6 +95,16 @@ const DOM = {
   previewIframe: document.getElementById('preview-iframe'),
   btnClosePreviewModal: document.getElementById('btn-close-preview-modal'),
   btnOpenPreviewTab: document.getElementById('btn-open-preview-tab'),
+
+  // Handbook List Panel
+  hbTotalCount: document.getElementById('hb-total-count'),
+  hbList: document.getElementById('admin-hb-list'),
+  btnNewHandbook: document.getElementById('btn-new-handbook'),
+
+  // Publish Modal extras
+  directLinkInput: document.getElementById('direct-link-input'),
+  btnCopyDirectLink: document.getElementById('btn-copy-direct-link'),
+  directLinkGroup: document.getElementById('direct-link-group'),
 
   toast: document.getElementById('admin-toast')
 };
@@ -165,20 +177,19 @@ async function showDashboard() {
   DOM.adminMain.style.display = 'block';
   DOM.adminUserEmail.textContent = adminState.user.email;
 
-  await loadHandbook();
+  await loadHandbookList();
 }
 
-// Load or create the default server handbook
-async function loadHandbook() {
+// Load all handbooks and select the first one (or last active one)
+async function loadHandbookList() {
   try {
     const list = await fetchAdminHandbooks();
-    if (list && list.length > 0) {
-      // Load details of the first handbook
-      adminState.handbook = await fetchAdminHandbook(list[0].id);
-    } else {
+    adminState.handbooks = list || [];
+
+    if (adminState.handbooks.length === 0) {
       // Create initial demo handbook on server
       const initialPages = generateSamplePages('#1e293b');
-      adminState.handbook = await createAdminHandbook({
+      const newHb = await createAdminHandbook({
         title: 'Handbook Budaya & Desain Sistem',
         subtitle: 'Panduan Operasional Tim Digital 2026',
         orientation: 'portrait',
@@ -191,13 +202,118 @@ async function loadHandbook() {
         isActive: true,
         readerPassword: null
       });
+      adminState.handbooks = [newHb];
     }
 
+    renderHandbookList();
+
+    // Select the active handbook or first
+    const activeId = localStorage.getItem('hfb_active_handbook_id');
+    const target = adminState.handbooks.find(h => h.id === activeId) || adminState.handbooks[0];
+    await selectHandbook(target.id);
+  } catch (err) {
+    showToast(`Error memuat daftar handbook: ${err.message}`);
+  }
+}
+
+function renderHandbookList() {
+  const list = adminState.handbooks;
+  if (DOM.hbTotalCount) DOM.hbTotalCount.textContent = list.length;
+  if (!DOM.hbList) return;
+
+  DOM.hbList.innerHTML = '';
+
+  list.forEach(hb => {
+    const item = document.createElement('div');
+    item.className = `admin-hb-item${adminState.handbook?.id === hb.id ? ' active' : ''}`;
+    item.dataset.id = hb.id;
+
+    const lockIcon = hb.hasPassword
+      ? `<svg class="admin-hb-item-lock" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`
+      : '';
+
+    item.innerHTML = `
+      ${lockIcon}
+      <span class="admin-hb-item-name" title="${hb.title}">${hb.title || 'Untitled'}</span>
+      <button class="admin-hb-item-delete" title="Hapus Handbook" data-id="${hb.id}">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+      </button>
+    `;
+
+    // Click the item body area (not delete btn) to select
+    item.addEventListener('click', async (e) => {
+      if (e.target.closest('.admin-hb-item-delete')) return;
+      await selectHandbook(hb.id);
+    });
+
+    // Delete button
+    item.querySelector('.admin-hb-item-delete').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm(`Hapus handbook "${hb.title}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+      try {
+        await deleteAdminHandbook(hb.id);
+        adminState.handbooks = adminState.handbooks.filter(h => h.id !== hb.id);
+        if (adminState.handbook?.id === hb.id) {
+          adminState.handbook = null;
+        }
+        showToast(`Handbook "${hb.title}" berhasil dihapus.`);
+
+        if (adminState.handbooks.length === 0) {
+          await loadHandbookList(); // creates a default
+        } else {
+          renderHandbookList();
+          if (!adminState.handbook) {
+            await selectHandbook(adminState.handbooks[0].id);
+          }
+        }
+      } catch (err) {
+        showToast(`Gagal menghapus: ${err.message}`);
+      }
+    });
+
+    DOM.hbList.appendChild(item);
+  });
+}
+
+async function selectHandbook(id) {
+  try {
+    adminState.handbook = await fetchAdminHandbook(id);
+    localStorage.setItem('hfb_active_handbook_id', id);
     syncHandbookToUI();
     renderPagesGrid();
     checkOrientationAlert();
+    renderHandbookList(); // refresh active state
   } catch (err) {
-    showToast(`Error: ${err.message}`);
+    showToast(`Gagal memuat handbook: ${err.message}`);
+  }
+}
+
+async function createNewHandbook() {
+  const title = prompt('Nama handbook baru:');
+  if (!title || !title.trim()) return;
+  try {
+    showToast('Membuat handbook baru...');
+    const newHb = await createAdminHandbook({
+      title: title.trim(),
+      subtitle: '',
+      orientation: 'portrait',
+      coverColor: '#1e293b',
+      pages: [],
+      audioUrl: null,
+      autoplay: true,
+      initialVolume: 0.45,
+      isPublished: true,
+      isActive: true,
+      readerPassword: null
+    });
+    adminState.handbooks.unshift(newHb);
+    await selectHandbook(newHb.id);
+    showToast(`Handbook "${title.trim()}" berhasil dibuat!`);
+  } catch (err) {
+    showToast(`Gagal membuat handbook: ${err.message}`);
   }
 }
 
@@ -494,6 +610,16 @@ function openPublishModal() {
   DOM.publicLinkInput.value = publicUrl;
   DOM.readerPasswordInput.value = hb.readerPassword || '';
 
+  // Build direct access link with key bypass
+  const accessKey = hb.accessKey || hb.uniqueSlug;
+  const directUrl = `${window.location.origin}/read.html?id=${hb.uniqueSlug}&key=${accessKey}`;
+  if (DOM.directLinkInput) DOM.directLinkInput.value = directUrl;
+
+  // Show/hide direct link section
+  if (DOM.directLinkGroup) {
+    DOM.directLinkGroup.style.display = (hb.readerPassword && hb.readerPassword.trim()) ? 'block' : 'none';
+  }
+
   const isActive = hb.isActive !== false;
   updateLinkStatusUI(isActive);
 
@@ -557,6 +683,9 @@ function setupEventListeners() {
   // Theme Toggles
   if (DOM.btnLoginTheme) DOM.btnLoginTheme.addEventListener('click', toggleAdminTheme);
   if (DOM.btnAdminTheme) DOM.btnAdminTheme.addEventListener('click', toggleAdminTheme);
+
+  // New Handbook button
+  if (DOM.btnNewHandbook) DOM.btnNewHandbook.addEventListener('click', createNewHandbook);
 
   // Logout
   DOM.btnLogout.addEventListener('click', async () => {
@@ -734,6 +863,13 @@ function setupEventListeners() {
   DOM.btnClosePublishModal.addEventListener('click', () => DOM.publishModal.style.display = 'none');
   DOM.btnCancelPublish.addEventListener('click', () => DOM.publishModal.style.display = 'none');
 
+  DOM.readerPasswordInput.addEventListener('input', () => {
+    const val = DOM.readerPasswordInput.value.trim();
+    if (DOM.directLinkGroup) {
+      DOM.directLinkGroup.style.display = val ? 'block' : 'none';
+    }
+  });
+
   DOM.btnCopyPublicLink.addEventListener('click', () => {
     navigator.clipboard.writeText(DOM.publicLinkInput.value).then(() => {
       showToast('Link berhasil disalin ke clipboard!');
@@ -741,6 +877,17 @@ function setupEventListeners() {
       setTimeout(() => (DOM.btnCopyPublicLink.textContent = 'Salin Link'), 2000);
     });
   });
+
+  if (DOM.btnCopyDirectLink) {
+    DOM.btnCopyDirectLink.addEventListener('click', () => {
+      navigator.clipboard.writeText(DOM.directLinkInput.value).then(() => {
+        showToast('Link direct berhasil disalin!');
+        const span = DOM.btnCopyDirectLink.querySelector('span');
+        if (span) span.textContent = 'Tersalin!';
+        setTimeout(() => { if (span) span.textContent = 'Salin'; }, 2000);
+      });
+    });
+  }
 
   DOM.btnToggleLinkActive.addEventListener('click', async () => {
     const current = adminState.handbook.isActive !== false;
@@ -754,6 +901,15 @@ function setupEventListeners() {
     adminState.handbook.readerPassword = DOM.readerPasswordInput.value.trim() || null;
     adminState.handbook.isPublished = true;
     await autoSaveHandbook();
+    // Refresh handbooks list to reflect password change
+    adminState.handbooks = adminState.handbooks.map(h =>
+      h.id === adminState.handbook.id ? { ...h, hasPassword: !!(adminState.handbook.readerPassword) } : h
+    );
+    renderHandbookList();
+    // Update direct link visibility
+    if (DOM.directLinkGroup) {
+      DOM.directLinkGroup.style.display = (adminState.handbook.readerPassword) ? 'block' : 'none';
+    }
     DOM.publishModal.style.display = 'none';
     showToast('Handbook berhasil dipublikasikan ke server!');
   });

@@ -278,15 +278,67 @@ export async function convertAdminPptx(file) {
   }
 }
 
-// Public Reader API (Read-Only)
-export async function fetchPublicHandbook(slugOrId, password = null) {
+export async function deleteAdminHandbook(id) {
+  const token = getAdminToken();
+  try {
+    const res = await fetch(`${API_BASE}/admin/handbooks/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {}
+
+  // Fallback for Vercel
+  let list = await getFallbackHandbooks();
+  list = list.filter(h => h.id !== id && h.uniqueSlug !== id);
+  localStorage.setItem('hfb_handbooks', JSON.stringify(list));
+  return { success: true };
+}
+
+// Public Catalog API (NO SLIDE IMAGES EXPOSED - SAFE FOR HOMEPAGE)
+export async function fetchPublicCatalog() {
+  try {
+    const res = await fetch(`${API_BASE}/public/handbooks`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {}
+
+  // Fallback for Vercel
+  const list = await getFallbackHandbooks();
+  return list
+    .filter(h => h.isPublished !== false && h.isActive !== false)
+    .map(h => ({
+      id: h.id,
+      uniqueSlug: h.uniqueSlug,
+      title: h.title,
+      subtitle: h.subtitle,
+      orientation: h.orientation,
+      coverColor: h.coverColor,
+      pageCount: h.pages ? h.pages.length : 0,
+      hasPassword: !!(h.readerPassword && h.readerPassword.trim() !== '')
+    }));
+}
+
+// Public Reader API (Read-Only with PIN & Direct Access Key)
+export async function fetchPublicHandbook(slugOrId, pinOrPassword = null, directKey = null) {
   const headers = {};
-  if (password) {
-    headers['x-reader-password'] = password;
+  if (pinOrPassword) {
+    headers['x-reader-password'] = pinOrPassword;
+  }
+  if (directKey) {
+    headers['x-access-key'] = directKey;
   }
 
+  const queryParams = new URLSearchParams();
+  if (pinOrPassword) queryParams.set('pin', pinOrPassword);
+  if (directKey) queryParams.set('key', directKey);
+  const qStr = queryParams.toString() ? `?${queryParams.toString()}` : '';
+
   try {
-    const res = await fetch(`${API_BASE}/public/handbook/${encodeURIComponent(slugOrId)}`, {
+    const res = await fetch(`${API_BASE}/public/handbook/${encodeURIComponent(slugOrId)}${qStr}`, {
       method: 'GET',
       headers
     });
@@ -299,7 +351,7 @@ export async function fetchPublicHandbook(slugOrId, password = null) {
           title: data.title,
           subtitle: data.subtitle,
           coverColor: data.coverColor,
-          message: data.message
+          message: data.message || 'Masukkan PIN untuk membaca.'
         };
       }
       return {
@@ -324,7 +376,7 @@ export async function fetchPublicHandbook(slugOrId, password = null) {
   const hb = list.find(h => h.id === slugOrId || h.uniqueSlug === slugOrId) || list[0];
 
   if (hb) {
-    if (!hb.isActive) {
+    if (hb.isActive === false) {
       return {
         status: 'error',
         code: 403,
@@ -332,15 +384,23 @@ export async function fetchPublicHandbook(slugOrId, password = null) {
         message: 'Handbook ini telah dinonaktifkan.'
       };
     }
-    if (hb.readerPassword && hb.readerPassword !== password) {
-      return {
-        status: 'password_required',
-        title: hb.title,
-        subtitle: hb.subtitle,
-        coverColor: hb.coverColor,
-        message: 'Masukkan kata sandi untuk membaca.'
-      };
+
+    // Check PIN and Direct Access Key
+    if (hb.readerPassword && hb.readerPassword.trim() !== '') {
+      const isDirectKeyValid = directKey && (directKey === hb.accessKey || directKey === hb.uniqueSlug);
+      const isPinValid = pinOrPassword && pinOrPassword === hb.readerPassword;
+
+      if (!isDirectKeyValid && !isPinValid) {
+        return {
+          status: 'password_required',
+          title: hb.title,
+          subtitle: hb.subtitle,
+          coverColor: hb.coverColor,
+          message: 'Handbook ini dilindungi PIN oleh administrator.'
+        };
+      }
     }
+
     return {
       status: 'success',
       handbook: hb

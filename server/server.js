@@ -260,7 +260,9 @@ app.get('/api/admin/handbooks', requireAdminAuth, (req, res) => {
     pageCount: item.pages ? item.pages.length : 0,
     isPublished: !!item.isPublished,
     isActive: item.isActive !== false,
-    hasPassword: !!item.readerPassword,
+    readerPassword: item.readerPassword || null,
+    hasPassword: !!(item.readerPassword && item.readerPassword.trim() !== ''),
+    accessKey: item.accessKey || `key_${item.uniqueSlug || item.id}`,
     updatedAt: item.updatedAt || item.createdAt
   }));
   res.json(summaries);
@@ -273,20 +275,25 @@ app.get('/api/admin/handbooks/:id', requireAdminAuth, (req, res) => {
   if (!found) {
     return res.status(404).json({ error: 'Handbook tidak ditemukan.' });
   }
+  if (!found.accessKey) {
+    found.accessKey = `key_${found.uniqueSlug || found.id}`;
+  }
   res.json(found);
 });
 
 // POST /api/admin/handbooks - Create new handbook
 app.post('/api/admin/handbooks', requireAdminAuth, (req, res) => {
-  const { title, subtitle, orientation, coverColor, pages, audioUrl, autoplay, initialVolume } = req.body;
+  const { title, subtitle, orientation, coverColor, pages, audioUrl, autoplay, initialVolume, readerPassword } = req.body;
   const list = getHandbooks();
 
   const id = 'hb_' + Date.now();
   const uniqueSlug = 'bk-' + crypto.randomBytes(4).toString('hex');
+  const accessKey = 'key_' + crypto.randomBytes(6).toString('hex');
 
   const newHandbook = {
     id,
     uniqueSlug,
+    accessKey,
     title: title || 'Handbook Baru',
     subtitle: subtitle || '',
     orientation: orientation || 'portrait',
@@ -295,14 +302,14 @@ app.post('/api/admin/handbooks', requireAdminAuth, (req, res) => {
     audioUrl: audioUrl || null,
     autoplay: autoplay !== false,
     initialVolume: typeof initialVolume === 'number' ? initialVolume : 0.45,
-    isPublished: false,
+    isPublished: true,
     isActive: true,
-    readerPassword: null,
+    readerPassword: readerPassword || null,
     createdAt: Date.now(),
     updatedAt: Date.now()
   };
 
-  list.push(newHandbook);
+  list.unshift(newHandbook);
   saveHandbooks(list);
 
   res.status(201).json(newHandbook);
@@ -329,11 +336,13 @@ app.put('/api/admin/handbooks/:id', requireAdminAuth, (req, res) => {
     initialVolume,
     isPublished,
     isActive,
-    readerPassword
+    readerPassword,
+    accessKey
   } = req.body;
 
   list[index] = {
     ...existing,
+    accessKey: accessKey || existing.accessKey || `key_${existing.uniqueSlug || existing.id}`,
     title: title !== undefined ? title : existing.title,
     subtitle: subtitle !== undefined ? subtitle : existing.subtitle,
     orientation: orientation !== undefined ? orientation : existing.orientation,
@@ -367,7 +376,7 @@ app.delete('/api/admin/handbooks/:id', requireAdminAuth, (req, res) => {
 });
 
 // ============================================================================
-// PUBLIC READER ENDPOINT (Read-Only, Protected from modification)
+// PUBLIC READER ENDPOINTS (Read-Only, Protected from modification)
 // ============================================================================
 
 // Strict check: Block any write attempts to public
@@ -381,12 +390,31 @@ app.use('/api/public', (req, res, next) => {
   next();
 });
 
+// GET /api/public/handbooks - Public catalog list (NO SLIDE IMAGES EXPOSED)
+app.get('/api/public/handbooks', (req, res) => {
+  const list = getHandbooks();
+  const catalog = list
+    .filter((h) => h.isPublished && h.isActive !== false)
+    .map((h) => ({
+      id: h.id,
+      uniqueSlug: h.uniqueSlug,
+      title: h.title,
+      subtitle: h.subtitle,
+      orientation: h.orientation,
+      coverColor: h.coverColor,
+      pageCount: h.pages ? h.pages.length : 0,
+      hasPassword: !!(h.readerPassword && h.readerPassword.trim() !== ''),
+      updatedAt: h.updatedAt || h.createdAt
+    }));
+  res.json(catalog);
+});
+
 // GET /api/public/handbook/:slugOrId - Public read endpoint
 app.get('/api/public/handbook/:id', (req, res) => {
   const list = getHandbooks();
   let handbook = list.find((h) => h.uniqueSlug === req.params.id || h.id === req.params.id);
 
-  // Gracefully fallback to the primary handbook if id is 'default', 'preview', or if single book exists
+  // Fallback to first published if 'default' requested
   if (!handbook && (req.params.id === 'default' || req.params.id === 'preview' || list.length === 1)) {
     handbook = list.find((h) => h.isPublished) || list[0];
   }
@@ -415,22 +443,30 @@ app.get('/api/public/handbook/:id', (req, res) => {
     });
   }
 
-  // Check 4: Password protection
+  // Check 4: PIN and Direct Access Key Verification
   if (handbook.readerPassword && handbook.readerPassword.trim() !== '') {
-    const providedPassword = req.headers['x-reader-password'] || req.query.pwd;
-    if (!providedPassword || providedPassword !== handbook.readerPassword) {
-      // Do NOT send pages or sensitive data if password is not verified!
+    const providedKey = req.query.key || req.headers['x-access-key'];
+    const providedPin = req.headers['x-reader-password'] || req.query.pwd || req.query.pin;
+
+    // DIRECT LINK BYPASS: If direct key matches, allow immediate reading without PIN!
+    const isDirectKeyValid =
+      providedKey &&
+      (providedKey === handbook.accessKey || providedKey === handbook.uniqueSlug);
+    const isPinValid = providedPin && providedPin === handbook.readerPassword;
+
+    if (!isDirectKeyValid && !isPinValid) {
+      // Do NOT send pages if neither direct key nor PIN is verified!
       return res.status(200).json({
         passwordRequired: true,
         title: handbook.title,
         subtitle: handbook.subtitle,
         coverColor: handbook.coverColor,
-        message: 'Handbook ini dilindungi kata sandi baca.'
+        message: 'Handbook ini dilindungi PIN oleh administrator.'
       });
     }
   }
 
-  // Safe public payload (strip out admin password and internal tokens)
+  // Safe public payload
   res.json({
     id: handbook.id,
     uniqueSlug: handbook.uniqueSlug,

@@ -2,6 +2,8 @@
   {
     "id": "hb_1792643718789",
     "uniqueSlug": "bk-d73a70a2",
+    "accessKey": "key_secret2026",
+    "readerPassword": "1234",
     "title": "Handbook Budaya & Desain Sistem",
     "subtitle": "Panduan Operasional Tim Digital 2026",
     "orientation": "landscape",
@@ -132,6 +134,6 @@
     "isActive": true,
     "readerPassword": null,
     "createdAt": 1792643718790,
-    "updatedAt": 1792652057688
+    "updatedAt": 1792653573893
   }
 ]

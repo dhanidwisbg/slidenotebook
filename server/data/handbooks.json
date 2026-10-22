@@ -2,10 +2,12 @@
   {
     "id": "hb_1792643718789",
     "uniqueSlug": "bk-d73a70a2",
+    "accessKey": "key_secret2026",
+    "readerPassword": "1234",
     "title": "Handbook Budaya & Desain Sistem",
     "subtitle": "Panduan Operasional Tim Digital 2026",
     "orientation": "landscape",
-    "coverColor": "#ffffff",
+    "coverColor": "#4a1c1d",
     "pages": [
       {
         "id": "page_pdf_n3kwvfb_1792644882935",
@@ -130,8 +132,7 @@
     "initialVolume": 0.45,
     "isPublished": true,
     "isActive": true,
-    "readerPassword": null,
     "createdAt": 1792643718790,
-    "updatedAt": 1792653573893
+    "updatedAt": 1792656380302
   }
 ]

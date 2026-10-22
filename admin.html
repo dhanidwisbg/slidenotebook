@@ -135,6 +135,33 @@
         </header>
 
         <!-- Main Content -->
+        <!-- ============================================================== -->
+        <!-- HANDBOOK LIST PANEL (Multi-Handbook Management)                -->
+        <!-- ============================================================== -->
+        <div class="admin-hb-panel" id="admin-hb-panel">
+          <div class="admin-hb-panel-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                <path d="M6 2v20"/>
+              </svg>
+              <strong style="font-size: 0.88rem;">Daftar Handbook</strong>
+              <span class="brand-badge" id="hb-total-count" style="background: rgba(56,189,248,0.12); color: var(--accent-primary);">0</span>
+            </div>
+            <button class="btn-pill btn-publish-highlight" id="btn-new-handbook" style="font-size: 0.82rem; padding: 0.35rem 0.9rem;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Buat Handbook Baru</span>
+            </button>
+          </div>
+          <div class="admin-hb-list" id="admin-hb-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Main Content -->
         <main class="edit-container">
           <!-- Handbook Identity Card -->
           <section class="edit-header-card">
@@ -349,14 +376,34 @@
             </div>
           </div>
 
-          <!-- Reader Password (Optional) -->
+          <!-- Reader Password (Optional) + Direct Access Link -->
           <div class="input-group">
             <label class="input-label" for="reader-password-input">
-              <span>Kata Sandi Baca (Opsional)</span>
+              <span>PIN Baca (Opsional — buat PIN untuk melindungi handbook ini)</span>
             </label>
-            <input type="text" id="reader-password-input" class="input-text" placeholder="Kosongkan jika buku bebas dibaca siapa saja" />
+            <input type="text" id="reader-password-input" class="input-text" placeholder="Kosongkan jika bebas dibaca siapa saja" />
             <span style="font-size: 0.74rem; color: var(--text-faint);">
-              Jika diisi, pembaca wajib memasukkan kata sandi ini sebelum buku dapat dibuka.
+              Jika PIN diisi, pembaca wajib memasukkan PIN sebelum buku dapat dibuka.
+            </span>
+          </div>
+
+          <!-- Direct Access Link (Bypasses PIN) -->
+          <div class="input-group" id="direct-link-group">
+            <label class="input-label" style="display: flex; align-items: center; gap: 0.4rem;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+              <span style="color: #10b981;">Link Direct (Bypass PIN — bagikan ke pengguna terpercaya)</span>
+            </label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" id="direct-link-input" class="input-text" readonly style="font-family: monospace; font-size: 0.82rem;" />
+              <button type="button" class="btn-pill" id="btn-copy-direct-link" style="white-space: nowrap; color: #10b981; border-color: rgba(16,185,129,0.35);">
+                <span>Salin</span>
+              </button>
+            </div>
+            <span style="font-size: 0.74rem; color: var(--text-faint);">
+              Pengguna yang mengakses via link ini langsung masuk tanpa memasukkan PIN.
             </span>
           </div>
 

@@ -292,3 +292,92 @@
   background: #f1f5f9;
   color: #0f172a;
 }
+
+/* ============================================================================
+   ADMIN HANDBOOK LIST PANEL
+   ============================================================================ */
+.admin-hb-panel {
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  padding: 1rem 2rem;
+}
+
+.admin-hb-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-hb-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.admin-hb-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.83rem;
+  max-width: 240px;
+}
+
+.admin-hb-item:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.admin-hb-item.active {
+  border-color: var(--accent-primary);
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.admin-hb-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-hb-item-lock {
+  color: #fbbf24;
+  flex-shrink: 0;
+}
+
+.admin-hb-item-delete {
+  background: none;
+  border: none;
+  padding: 0.1rem 0.2rem;
+  cursor: pointer;
+  color: var(--text-faint);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.admin-hb-item-delete:hover {
+  color: var(--accent-danger);
+}
+
+[data-theme='light'] .admin-hb-panel {
+  background: #f8fafc;
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='light'] .admin-hb-item {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+}
