@@ -97,7 +97,7 @@ export class FlipbookManager {
       // Image container with letterboxing support for mismatched ratios (FR-4)
       pageEl.innerHTML = `
         <div class="page-content-wrapper">
-          <img src="${page.dataUrl}" alt="${page.title || `Halaman ${index + 1}`}" loading="lazy" class="page-image" />
+          <img src="${page.imageUrl || page.dataUrl}" alt="${page.title || `Halaman ${index + 1}`}" loading="lazy" class="page-image" />
           <div class="page-spine-shadow"></div>
           <div class="page-edge-highlight"></div>
         </div>

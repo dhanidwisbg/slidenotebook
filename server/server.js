@@ -6,6 +6,18 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import { put, del } from '@vercel/blob';
+
+try {
+  process.loadEnvFile();
+} catch (e) {}
+
+const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || null;
+if (BLOB_TOKEN) {
+  console.log('[Storage] Vercel Blob Storage active and connected.');
+} else {
+  console.log('[Storage] Running with local disk storage.');
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,6 +63,50 @@ function getHandbooks() {
 
 function saveHandbooks(list) {
   fs.writeFileSync(HANDBOOKS_FILE, JSON.stringify(list, null, 2));
+}
+
+// Convert base64 slide images to Vercel Blob URLs or local static files
+async function uploadSlideImagesToStorage(handbookId, pages) {
+  if (!pages || !Array.isArray(pages)) return pages;
+
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    // If it's a new slide containing raw base64 dataUrl
+    if (page.dataUrl && page.dataUrl.startsWith('data:image/')) {
+      const match = page.dataUrl.match(/^data:image\/(\w+);base64,(.+)$/);
+      if (match) {
+        const ext = match[1] === 'jpeg' ? 'jpg' : match[1];
+        const buffer = Buffer.from(match[2], 'base64');
+        const filename = `pages/${handbookId}/${page.id || `p_${i + 1}_${Date.now()}`}.${ext}`;
+
+        if (BLOB_TOKEN) {
+          try {
+            const blob = await put(filename, buffer, {
+              access: 'public',
+              token: BLOB_TOKEN
+            });
+            page.imageUrl = blob.url;
+            delete page.dataUrl; // Free the base64 from database!
+          } catch (blobErr) {
+            console.error('[Storage] Vercel Blob upload failed, fallback to local file:', blobErr.message);
+            saveSlideLocally(handbookId, page, buffer, ext);
+          }
+        } else {
+          saveSlideLocally(handbookId, page, buffer, ext);
+        }
+      }
+    }
+  }
+  return pages;
+}
+
+function saveSlideLocally(handbookId, page, buffer, ext) {
+  const hbDir = path.join(UPLOADS_DIR, 'handbooks', handbookId);
+  if (!fs.existsSync(hbDir)) fs.mkdirSync(hbDir, { recursive: true });
+  const file = `${page.id || `p_${Date.now()}`}.${ext}`;
+  fs.writeFileSync(path.join(hbDir, file), buffer);
+  page.imageUrl = `/uploads/handbooks/${handbookId}/${file}`;
+  delete page.dataUrl;
 }
 
 // ============================================================================
@@ -160,7 +216,7 @@ const audioUpload = multer({
 });
 
 app.post('/api/admin/upload-audio', requireAdminAuth, (req, res) => {
-  audioUpload.single('audio')(req, res, (err) => {
+  audioUpload.single('audio')(req, res, async (err) => {
     if (err) {
       return res.status(400).json({ error: err.message || 'Gagal mengunggah file audio.' });
     }
@@ -168,7 +224,24 @@ app.post('/api/admin/upload-audio', requireAdminAuth, (req, res) => {
       return res.status(400).json({ error: 'Tidak ada file audio yang diunggah.' });
     }
 
-    const audioUrl = `/uploads/audio/${req.file.filename}`;
+    let audioUrl = `/uploads/audio/${req.file.filename}`;
+
+    // Upload to Vercel Blob if active
+    if (BLOB_TOKEN) {
+      try {
+        const fileBuffer = fs.readFileSync(req.file.path);
+        const blob = await put(`audio/${Date.now()}-${req.file.originalname}`, fileBuffer, {
+          access: 'public',
+          token: BLOB_TOKEN
+        });
+        audioUrl = blob.url;
+        // Clean up temporary local upload
+        try { fs.unlinkSync(req.file.path); } catch (e) {}
+      } catch (blobErr) {
+        console.warn('[Storage] Vercel Blob audio upload failed, using local file:', blobErr.message);
+      }
+    }
+
     res.json({
       success: true,
       audioUrl,
@@ -282,13 +355,16 @@ app.get('/api/admin/handbooks/:id', requireAdminAuth, (req, res) => {
 });
 
 // POST /api/admin/handbooks - Create new handbook
-app.post('/api/admin/handbooks', requireAdminAuth, (req, res) => {
+app.post('/api/admin/handbooks', requireAdminAuth, async (req, res) => {
   const { title, subtitle, orientation, coverColor, pages, audioUrl, autoplay, initialVolume, readerPassword } = req.body;
   const list = getHandbooks();
 
   const id = 'hb_' + Date.now();
   const uniqueSlug = 'bk-' + crypto.randomBytes(4).toString('hex');
   const accessKey = 'key_' + crypto.randomBytes(6).toString('hex');
+
+  // Convert raw base64 pages to storage URLs (Vercel Blob / Local Disk)
+  const storedPages = await uploadSlideImagesToStorage(id, pages || []);
 
   const newHandbook = {
     id,
@@ -298,7 +374,7 @@ app.post('/api/admin/handbooks', requireAdminAuth, (req, res) => {
     subtitle: subtitle || '',
     orientation: orientation || 'portrait',
     coverColor: coverColor || '#1e293b',
-    pages: pages || [],
+    pages: storedPages,
     audioUrl: audioUrl || null,
     autoplay: autoplay !== false,
     initialVolume: typeof initialVolume === 'number' ? initialVolume : 0.45,
@@ -316,7 +392,7 @@ app.post('/api/admin/handbooks', requireAdminAuth, (req, res) => {
 });
 
 // PUT /api/admin/handbooks/:id - Update handbook (pages, metadata, publication)
-app.put('/api/admin/handbooks/:id', requireAdminAuth, (req, res) => {
+app.put('/api/admin/handbooks/:id', requireAdminAuth, async (req, res) => {
   const list = getHandbooks();
   const index = list.findIndex((h) => h.id === req.params.id || h.uniqueSlug === req.params.id);
 
@@ -340,6 +416,12 @@ app.put('/api/admin/handbooks/:id', requireAdminAuth, (req, res) => {
     accessKey
   } = req.body;
 
+  // Convert any newly added raw base64 pages to storage URLs (Vercel Blob / Local Disk)
+  let storedPages = existing.pages;
+  if (pages !== undefined) {
+    storedPages = await uploadSlideImagesToStorage(existing.id, pages);
+  }
+
   list[index] = {
     ...existing,
     accessKey: accessKey || existing.accessKey || `key_${existing.uniqueSlug || existing.id}`,
@@ -347,7 +429,7 @@ app.put('/api/admin/handbooks/:id', requireAdminAuth, (req, res) => {
     subtitle: subtitle !== undefined ? subtitle : existing.subtitle,
     orientation: orientation !== undefined ? orientation : existing.orientation,
     coverColor: coverColor !== undefined ? coverColor : existing.coverColor,
-    pages: pages !== undefined ? pages : existing.pages,
+    pages: storedPages,
     audioUrl: audioUrl !== undefined ? audioUrl : existing.audioUrl,
     autoplay: autoplay !== undefined ? autoplay : existing.autoplay,
     initialVolume: initialVolume !== undefined ? initialVolume : existing.initialVolume,
@@ -362,17 +444,41 @@ app.put('/api/admin/handbooks/:id', requireAdminAuth, (req, res) => {
 });
 
 // DELETE /api/admin/handbooks/:id - Delete handbook
-app.delete('/api/admin/handbooks/:id', requireAdminAuth, (req, res) => {
+app.delete('/api/admin/handbooks/:id', requireAdminAuth, async (req, res) => {
   let list = getHandbooks();
-  const initialLen = list.length;
-  list = list.filter((h) => h.id !== req.params.id && h.uniqueSlug !== req.params.id);
+  const found = list.find((h) => h.id === req.params.id || h.uniqueSlug === req.params.id);
 
-  if (list.length === initialLen) {
+  if (!found) {
     return res.status(404).json({ error: 'Handbook tidak ditemukan.' });
   }
 
+  // Cleanup Vercel Blob files if any
+  if (BLOB_TOKEN && found.pages) {
+    const blobUrls = found.pages
+      .map((p) => p.imageUrl)
+      .filter((u) => u && u.includes('blob.vercel-storage.com'));
+    if (found.audioUrl && found.audioUrl.includes('blob.vercel-storage.com')) {
+      blobUrls.push(found.audioUrl);
+    }
+    if (blobUrls.length > 0) {
+      del(blobUrls, { token: BLOB_TOKEN }).catch((e) =>
+        console.warn('[Storage] Blob delete cleanup warning:', e.message)
+      );
+    }
+  }
+
+  // Cleanup local files if any
+  const localHbDir = path.join(UPLOADS_DIR, 'handbooks', found.id);
+  if (fs.existsSync(localHbDir)) {
+    try {
+      fs.rmSync(localHbDir, { recursive: true, force: true });
+    } catch (e) {}
+  }
+
+  list = list.filter((h) => h.id !== req.params.id && h.uniqueSlug !== req.params.id);
   saveHandbooks(list);
-  res.json({ success: true, message: 'Handbook berhasil dihapus.' });
+
+  res.json({ success: true, message: 'Handbook dan file terkait berhasil dihapus.' });
 });
 
 // ============================================================================

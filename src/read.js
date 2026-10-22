@@ -206,7 +206,7 @@ function renderThumbnailsDrawer() {
 
     thumbItem.innerHTML = `
       <div class="thumb-img-wrap">
-        <img src="${page.dataUrl}" alt="${page.title}" class="thumb-img" loading="lazy" />
+        <img src="${page.imageUrl || page.dataUrl}" alt="${page.title}" class="thumb-img" loading="lazy" />
       </div>
       <span class="thumb-label">${index === 0 ? 'Sampul' : `Hal ${index + 1}`}</span>
     `;

@@ -383,7 +383,7 @@ function renderPagesGrid() {
 
     card.innerHTML = `
       <div class="page-card-thumbnail-wrap" draggable="true" title="Tarik gambar untuk memindahkan urutan">
-        <img src="${page.dataUrl}" alt="${page.title}" class="page-card-thumbnail" loading="lazy" />
+        <img src="${page.imageUrl || page.dataUrl}" alt="${page.title}" class="page-card-thumbnail" loading="lazy" />
         ${badgeText ? `<div class="page-badge-cover">${badgeText}</div>` : ''}
         ${hasMismatch ? `<div class="page-card-warning-tag" title="Rasio halaman berbeda dari orientasi buku">⚠️ Rasio Beda</div>` : ''}
       </div>
