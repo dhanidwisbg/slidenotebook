@@ -5,7 +5,7 @@
     "title": "Handbook Budaya & Desain Sistem",
     "subtitle": "Panduan Operasional Tim Digital 2026",
     "orientation": "landscape",
-    "coverColor": "#4a1c1d",
+    "coverColor": "#ffffff",
     "pages": [
       {
         "id": "page_pdf_n3kwvfb_1792644882935",
@@ -132,6 +132,6 @@
     "isActive": true,
     "readerPassword": null,
     "createdAt": 1792643718790,
-    "updatedAt": 1792652057688
+    "updatedAt": 1792653573893
   }
 ]

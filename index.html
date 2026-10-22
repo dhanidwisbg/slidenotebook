@@ -3,125 +3,769 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Handbook Flipbook — Platform Handbook Digital Interaktif</title>
+    <title>Handbook Flipbook — Platform Buku & Presentasi Digital Interaktif</title>
+    <meta name="description" content="Baca handbook dan slide presentasi dengan sensasi membalik halaman 3D interaktif, audio musik latar santai, dan tata letak halaman ganda responsif." />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z'/><path d='M6 2v20'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/src/style.css" />
     <style>
-      .landing-hero {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 2rem 1.5rem;
-        background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
+      :root {
+        --landing-glow: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.15) 0%, rgba(99, 102, 241, 0.08) 35%, transparent 70%);
       }
-      .portal-cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-        gap: 1.5rem;
-        max-width: 780px;
-        width: 100%;
-        margin-top: 2.5rem;
+
+      body {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        overflow-x: hidden;
       }
-      .portal-card {
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
-        border-radius: 18px;
-        padding: 2rem;
+
+      h1, h2, h3, h4, .brand-title {
+        font-family: 'Outfit', sans-serif;
+      }
+
+      /* Navbar */
+      .landing-nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(9, 13, 22, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border-color);
+        padding: 0.85rem 2rem;
         display: flex;
-        flex-direction: column;
         align-items: center;
-        text-align: center;
+        justify-content: space-between;
+      }
+
+      .nav-brand-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
         text-decoration: none;
         color: var(--text-main);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 1.75rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: color 0.2s ease;
+      }
+
+      .nav-links a:hover {
+        color: var(--accent-primary);
+      }
+
+      .btn-nav-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #0284c7, #2563eb);
+        color: #ffffff;
+        padding: 0.55rem 1.25rem;
+        border-radius: 9999px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+        transition: all 0.25s ease;
+      }
+
+      .btn-nav-cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
+      }
+
+      /* Hero Section */
+      .hero-section {
+        position: relative;
+        padding: 5rem 1.5rem 4rem;
+        text-align: center;
+        background: var(--landing-glow);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        border-radius: 9999px;
+        background: rgba(56, 189, 248, 0.1);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        color: var(--accent-primary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        animation: fadeIn 0.8s ease-out;
+      }
+
+      .hero-title {
+        font-size: clamp(2.3rem, 5vw, 3.8rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        max-width: 860px;
+        margin: 0 auto 1.25rem;
+        background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero-desc {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        color: var(--text-muted);
+        max-width: 680px;
+        line-height: 1.65;
+        margin: 0 auto 2.5rem;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 3.5rem;
+      }
+
+      .btn-hero-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.65rem;
+        background: linear-gradient(135deg, #0284c7 0%, #3b82f6 100%);
+        color: #ffffff;
+        font-size: 1.05rem;
+        font-weight: 700;
+        padding: 0.9rem 2rem;
+        border-radius: 12px;
+        text-decoration: none;
+        box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.5), 0 0 20px rgba(56, 189, 248, 0.2);
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .btn-hero-primary:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 35px -5px rgba(2, 132, 199, 0.65), 0 0 30px rgba(56, 189, 248, 0.35);
+      }
+
+      .btn-hero-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        font-size: 1.05rem;
+        font-weight: 600;
+        padding: 0.9rem 1.75rem;
+        border-radius: 12px;
+        text-decoration: none;
+        backdrop-filter: blur(10px);
+        transition: all 0.25s ease;
+      }
+
+      .btn-hero-secondary:hover {
+        background: rgba(30, 41, 59, 0.9);
+        border-color: var(--accent-primary);
+        color: var(--accent-primary);
+        transform: translateY(-2px);
+      }
+
+      /* Showcase Mockup */
+      .showcase-wrapper {
+        width: 100%;
+        max-width: 920px;
+        margin: 0 auto;
+        position: relative;
+        perspective: 1200px;
+      }
+
+      .showcase-card {
+        background: var(--bg-surface);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(56, 189, 248, 0.12);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         position: relative;
         overflow: hidden;
       }
-      .portal-card:hover {
-        border-color: var(--accent-primary);
-        box-shadow: 0 12px 30px var(--accent-glow);
-        transform: translateY(-4px);
-      }
-      .portal-card-icon {
-        width: 56px;
-        height: 56px;
+
+      .showcase-preview-box {
+        width: 100%;
+        height: 380px;
+        max-height: 50vh;
         border-radius: 16px;
+        background: #111827;
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .showcase-cover-art {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.85;
+        transition: transform 0.5s ease;
+      }
+
+      .showcase-preview-box:hover .showcase-cover-art {
+        transform: scale(1.03);
+      }
+
+      .showcase-overlay-cta {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(9, 13, 22, 0.2) 0%, rgba(9, 13, 22, 0.85) 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .showcase-hb-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+        color: #ffffff;
+      }
+
+      .showcase-hb-meta {
+        font-size: 0.95rem;
+        color: var(--text-muted);
         margin-bottom: 1.25rem;
       }
-      .portal-card.admin .portal-card-icon {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2));
-        color: var(--accent-success);
-        border: 1px solid rgba(16, 185, 129, 0.3);
+
+      .floating-badges-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-top: 1.5rem;
       }
-      .portal-card.reader .portal-card-icon {
-        background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(129, 140, 248, 0.2));
+
+      .floating-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(15, 23, 42, 0.75);
+        border: 1px solid var(--border-color);
+        padding: 0.45rem 0.9rem;
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      /* Features Section */
+      .features-section {
+        padding: 6rem 1.5rem;
+        max-width: 1140px;
+        margin: 0 auto;
+      }
+
+      .section-header {
+        text-align: center;
+        margin-bottom: 4rem;
+      }
+
+      .section-badge {
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
         color: var(--accent-primary);
-        border: 1px solid rgba(56, 189, 248, 0.3);
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+
+      .section-title {
+        font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+        font-weight: 800;
+        margin-bottom: 1rem;
+      }
+
+      .section-desc {
+        font-size: 1.05rem;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.75rem;
+      }
+
+      .feature-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 2.25rem 2rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .feature-card:hover {
+        border-color: rgba(56, 189, 248, 0.4);
+        transform: translateY(-5px);
+        box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 0 25px var(--accent-glow);
+      }
+
+      .feature-icon-wrap {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(99, 102, 241, 0.15));
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        color: var(--accent-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .feature-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.65rem;
+        color: var(--text-main);
+      }
+
+      .feature-text {
+        font-size: 0.92rem;
+        color: var(--text-muted);
+        line-height: 1.65;
+        margin: 0;
+      }
+
+      /* How It Works Section */
+      .steps-section {
+        padding: 5rem 1.5rem 6rem;
+        background: rgba(15, 23, 42, 0.4);
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 2rem;
+        max-width: 1040px;
+        margin: 0 auto;
+      }
+
+      .step-item {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 2rem 1.75rem;
+        position: relative;
+      }
+
+      .step-num {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--accent-primary);
+        margin-bottom: 1rem;
+        font-family: 'Outfit', sans-serif;
+      }
+
+      .step-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .step-desc {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      /* Bottom CTA Banner */
+      .cta-banner-section {
+        padding: 6rem 1.5rem;
+        text-align: center;
+      }
+
+      .cta-banner-box {
+        max-width: 860px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        border-radius: 28px;
+        padding: 4rem 2rem;
+        box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6), 0 0 40px rgba(56, 189, 248, 0.15);
+      }
+
+      .cta-title {
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        font-weight: 800;
+        margin-bottom: 1rem;
+      }
+
+      .cta-desc {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        max-width: 560px;
+        margin: 0 auto 2.25rem;
+        line-height: 1.6;
+      }
+
+      /* Footer */
+      .landing-footer {
+        border-top: 1px solid var(--border-color);
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.88rem;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @media (max-width: 768px) {
+        .landing-nav {
+          padding: 0.85rem 1.25rem;
+        }
+        .nav-links {
+          display: none;
+        }
+        .showcase-card {
+          padding: 1.25rem;
+        }
       }
     </style>
   </head>
   <body>
-    <main class="landing-hero">
-      <div class="brand-icon" style="width: 52px; height: 52px; border-radius: 16px; margin: 0 auto 1.25rem;">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-          <path d="M6 2v20"/>
+    <!-- Top Navigation Bar (NO ADMIN LINK) -->
+    <header class="landing-nav">
+      <a href="/" class="nav-brand-group">
+        <div class="brand-icon" style="width: 38px; height: 38px; border-radius: 12px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+            <path d="M6 2v20"/>
+          </svg>
+        </div>
+        <span class="brand-title" style="font-size: 1.25rem; font-weight: 700;">Handbook Flipbook</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#features">Fitur</a></li>
+        <li><a href="#how-to-read">Cara Membaca</a></li>
+      </ul>
+
+      <a href="/read.html?id=default" class="btn-nav-cta" id="btn-nav-read">
+        <span>Buka Handbook</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
         </svg>
-      </div>
+      </a>
+    </header>
 
-      <h1 style="font-size: 2.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.6rem;">
-        Handbook Flipbook
-      </h1>
-      <p style="font-size: 1.05rem; color: var(--text-muted); max-width: 580px; line-height: 1.6;">
-        Ubah slide presentasi PowerPoint & PDF menjadi buku digital interaktif dengan animasi membalik halaman, tekstur 3D alas buku, dan link baca publik bersama.
-      </p>
+    <!-- Main Content -->
+    <main>
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="hero-badge">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <span>Platform Buku & Slide Digital Interaktif</span>
+        </div>
 
-      <div class="portal-cards-grid">
-        <!-- Portal Admin Link -->
-        <a href="/admin.html" class="portal-card admin">
-          <div class="portal-card-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-          </div>
-          <span class="brand-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-success); margin-bottom: 0.5rem;">
-            KHUSUS ADMIN (LOGIN WAJIB)
-          </span>
-          <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.4rem;">Portal Admin</h2>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-            Buat, unggah banyak slide, atur halaman & musik, pratinjau, dan publikasikan handbook dengan link baca bersama.
-          </p>
-          <span class="btn-pill" style="font-size: 0.82rem; color: var(--accent-success); border-color: rgba(16, 185, 129, 0.3);">
-            Buka Portal Admin ➔
-          </span>
-        </a>
+        <h1 class="hero-title">
+          Sensasi Membaca Dokumen Layaknya Membuka Buku Nyata
+        </h1>
 
-        <!-- Portal Pembaca Link -->
-        <a href="/read.html?id=default" class="portal-card reader">
-          <div class="portal-card-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <p class="hero-desc">
+          Nikmati pengalaman membaca materi, slide presentasi, dan panduan organisasi dengan animasi 3D membalik halaman halus, tata letak dua halaman berdampingan, serta audio latar santai.
+        </p>
+
+        <div class="hero-actions">
+          <a href="/read.html?id=default" class="btn-hero-primary" id="btn-hero-read">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
             </svg>
+            <span>Mulai Membaca Sekarang</span>
+          </a>
+
+          <a href="#features" class="btn-hero-secondary">
+            <span>Lihat Fitur Interaktif</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </a>
+        </div>
+
+        <!-- Showcase Mockup -->
+        <div class="showcase-wrapper">
+          <div class="showcase-card">
+            <div class="showcase-preview-box">
+              <img id="showcase-cover-img" src="" alt="Handbook Cover Preview" class="showcase-cover-art" style="display:none;" />
+              <div class="showcase-overlay-cta">
+                <span class="brand-badge" style="background: rgba(56, 189, 248, 0.2); color: var(--accent-primary); margin-bottom: 0.6rem;">
+                  HANDBOOK SIAP DIBACA
+                </span>
+                <h3 class="showcase-hb-title" id="showcase-title">Handbook Budaya & Desain Sistem</h3>
+                <p class="showcase-hb-meta" id="showcase-subtitle">Panduan Interaktif & Presentasi Slide</p>
+                
+                <a href="/read.html?id=default" class="btn-hero-primary" style="padding: 0.75rem 1.75rem; font-size: 0.95rem;">
+                  <span>Buka Lembaran Buku ➔</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="floating-badges-row">
+              <span class="floating-badge">
+                <span>📖</span> Dua Halaman Berdampingan (Spread View)
+              </span>
+              <span class="floating-badge">
+                <span>✨</span> Efek 3D Page-Flip Realistis
+              </span>
+              <span class="floating-badge">
+                <span>🎵</span> Musik Latar Pengiring
+              </span>
+              <span class="floating-badge">
+                <span>📱</span> Responsif Desktop & Mobile
+              </span>
+            </div>
           </div>
-          <span class="brand-badge" style="background: rgba(56, 189, 248, 0.15); color: var(--accent-primary); margin-bottom: 0.5rem;">
-            TAMPILAN PEMBACA (READ-ONLY)
-          </span>
-          <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.4rem;">Mode Pembaca</h2>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-            Buka link handbook publik murni tanpa alat editor. Animasi balik halaman halus, alas buku 3D, dan musik latar.
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section id="features" class="features-section">
+        <div class="section-header">
+          <span class="section-badge">Pengalaman Modern</span>
+          <h2 class="section-title">Fitur Membaca yang Memukau</h2>
+          <p class="section-desc">
+            Didesain khusus untuk memberikan kenyamanan membaca dokumen digital tanpa rasa monoton dan melelahkan.
           </p>
-          <span class="btn-pill" style="font-size: 0.82rem; color: var(--accent-primary); border-color: rgba(56, 189, 248, 0.3);">
-            Buka Mode Baca ➔
-          </span>
-        </a>
-      </div>
+        </div>
+
+        <div class="features-grid">
+          <!-- Feature 1 -->
+          <div class="feature-card">
+            <div class="feature-icon-wrap">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                <path d="M6 2v20"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Animasi 3D Realistis</h3>
+            <p class="feature-text">
+              Sensasi membalik halaman halus dengan bayangan mendalam dan kelengkungan kertas dinamis, menyerupai lembaran buku fisik asli.
+            </p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="feature-card">
+            <div class="feature-icon-wrap">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Format Dua Halaman (Spread)</h3>
+            <p class="feature-text">
+              Tata letak kiri & kanan proporsional yang memaksimalkan luas layar laptop maupun PC, membuat teks slide tetap tajam dan mudah dibaca.
+            </p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="feature-card">
+            <div class="feature-icon-wrap">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M9 18V5l12-2v13"/>
+                <circle cx="6" cy="18" r="3"/>
+                <circle cx="18" cy="16" r="3"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Musik Latar Relaksasi</h3>
+            <p class="feature-text">
+              Dukungan audio instrumen yang menenangkan dengan kendali volume mandiri, membantu pembaca lebih rileks dan fokus pada isi materi.
+            </p>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="feature-card">
+            <div class="feature-icon-wrap">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Drawer Thumbnail Cepat</h3>
+            <p class="feature-text">
+              Lompat ke halaman mana pun dalam sekejap dengan drawer pratinjau thumbnail, slider halaman bawah, atau tombol panah keyboard.
+            </p>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="feature-card">
+            <div class="feature-icon-wrap">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Mode Layar Penuh</h3>
+            <p class="feature-text">
+              Nikmati bacaan tanpa gangguan jendela browser dengan fitur Fullscreen satu klik untuk tampilan visual maksimal.
+            </p>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="feature-card">
+            <div class="feature-icon-wrap">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Aman & Ringan</h3>
+            <p class="feature-text">
+              Tidak membutuhkan instalasi aplikasi apa pun. Cukup buka link di browser modern dan dokumen langsung siap dibaca.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- How to Read Section -->
+      <section id="how-to-read" class="steps-section">
+        <div class="section-header" style="margin-bottom: 3rem;">
+          <span class="section-badge">Panduan Navigasi</span>
+          <h2 class="section-title">Cara Membaca Flipbook</h2>
+          <p class="section-desc">Tiga langkah sederhana untuk menjelajahi lembaran digital.</p>
+        </div>
+
+        <div class="steps-grid">
+          <div class="step-item">
+            <div class="step-num">01</div>
+            <h3 class="step-title">Buka Handbook</h3>
+            <p class="step-desc">Klik tombol "Mulai Membaca" untuk langsung memuat lembaran buku digital secara instan.</p>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">02</div>
+            <h3 class="step-title">Balik Halaman</h3>
+            <p class="step-desc">Tarik sudut halaman dengan mouse/sentuhan, tekan tombol panah keyboard, atau klik tombol navigasi samping.</p>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">03</div>
+            <h3 class="step-title">Kenyamanan Ekstra</h3>
+            <p class="step-desc">Aktifkan musik latar dan masuk ke mode layar penuh untuk pengalaman membaca yang imersif.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom CTA Banner -->
+      <section class="cta-banner-section">
+        <div class="cta-banner-box">
+          <h2 class="cta-title">Siap Membuka Lembaran Handbook?</h2>
+          <p class="cta-desc">
+            Mulailah membaca materi dan slide presentasi dengan visual interaktif berkualitas tinggi sekarang juga.
+          </p>
+          <a href="/read.html?id=default" class="btn-hero-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;">
+            <span>Buka Handbook Sekarang ➔</span>
+          </a>
+        </div>
+      </section>
     </main>
+
+    <!-- Footer (NO ADMIN LINK) -->
+    <footer class="landing-footer">
+      <div style="max-width: 1140px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+            <path d="M6 2v20"/>
+          </svg>
+          <span style="font-weight: 700; color: #ffffff;">Handbook Flipbook</span>
+        </div>
+        <div>
+          © 2026 Handbook Flipbook. Platform Dokumen & Presentasi Interaktif.
+        </div>
+      </div>
+    </footer>
+
+    <!-- Script to dynamically load latest title and preview if available -->
+    <script type="module">
+      async function loadPreview() {
+        try {
+          let hb = null;
+          // Try local storage first
+          const cached = localStorage.getItem('hfb_handbook_default');
+          if (cached) {
+            hb = JSON.parse(cached);
+          } else {
+            // Try fetching static or API
+            const res = await fetch('/api/public/handbook/default').catch(() => null);
+            if (res && res.ok) {
+              hb = await res.json();
+            } else {
+              const res2 = await fetch('/data/handbooks.json').catch(() => null);
+              if (res2 && res2.ok) {
+                const list = await res2.json();
+                hb = list[0];
+              }
+            }
+          }
+
+          if (hb) {
+            if (hb.title) {
+              document.getElementById('showcase-title').textContent = hb.title;
+            }
+            if (hb.subtitle) {
+              document.getElementById('showcase-subtitle').textContent = hb.subtitle;
+            }
+            if (hb.pages && hb.pages.length > 0 && hb.pages[0].dataUrl) {
+              const img = document.getElementById('showcase-cover-img');
+              img.src = hb.pages[0].dataUrl;
+              img.style.display = 'block';
+            }
+          }
+        } catch (e) {
+          // Keep defaults
+        }
+      }
+      loadPreview();
+    </script>
   </body>
 </html>

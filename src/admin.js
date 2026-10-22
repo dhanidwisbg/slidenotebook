@@ -32,8 +32,7 @@ const adminState = {
 const DOM = {
   loginScreen: document.getElementById('login-screen'),
   loginForm: document.getElementById('login-form'),
-  loginEmail: document.getElementById('login-email'),
-  loginPassword: document.getElementById('login-password'),
+  loginPasscode: document.getElementById('login-passcode'),
   loginError: document.getElementById('login-error'),
   adminMain: document.getElementById('admin-main'),
   adminUserEmail: document.getElementById('admin-user-email'),
@@ -499,14 +498,13 @@ function setupEventListeners() {
     DOM.loginError.style.display = 'none';
 
     try {
-      const email = DOM.loginEmail.value.trim();
-      const password = DOM.loginPassword.value;
-      const res = await loginAdmin(email, password);
+      const passcode = DOM.loginPasscode.value.trim();
+      const res = await loginAdmin(passcode);
       adminState.user = res.user;
-      showToast('Login berhasil sebagai Administrator!');
+      showToast('Login berhasil!');
       await showDashboard();
     } catch (err) {
-      DOM.loginError.textContent = err.message || 'Login gagal. Periksa kembali email dan password.';
+      DOM.loginError.textContent = err.message || 'Kode akses admin salah. Silakan masukkan 12345678.';
       DOM.loginError.style.display = 'block';
     }
   });

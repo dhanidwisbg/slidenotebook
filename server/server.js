@@ -59,6 +59,7 @@ function saveHandbooks(list) {
 // ============================================================================
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@flipbook.id';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || '12345678';
 
 function requireAdminAuth(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -68,7 +69,7 @@ function requireAdminAuth(req, res, next) {
 
   if (!token || !activeSessions.has(token)) {
     return res.status(401).json({
-      error: 'Akses ditolak. Anda harus login sebagai admin untuk melakukan operasi ini.',
+      error: 'Akses ditolak. Anda harus memasukkan kode akses admin.',
       code: 'UNAUTHORIZED'
     });
   }
@@ -79,11 +80,16 @@ function requireAdminAuth(req, res, next) {
 
 // POST /api/auth/login
 app.post('/api/auth/login', (req, res) => {
-  const { email, password } = req.body;
+  const { passcode, email, password } = req.body;
 
-  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+  // Accept passcode 12345678 or legacy credentials
+  if (
+    passcode === ADMIN_PASSCODE ||
+    passcode === '12345678' ||
+    (email === ADMIN_EMAIL && password === ADMIN_PASSWORD)
+  ) {
     const token = crypto.randomBytes(32).toString('hex');
-    const user = { email: ADMIN_EMAIL, name: 'Administrator', role: 'admin' };
+    const user = { email: 'admin@flipbook.id', name: 'Administrator', role: 'admin' };
 
     activeSessions.set(token, user);
     res.cookie('admin_token', token, {
@@ -100,7 +106,7 @@ app.post('/api/auth/login', (req, res) => {
   }
 
   return res.status(401).json({
-    error: 'Email atau kata sandi admin salah. Periksa kembali akun Anda.'
+    error: 'Kode akses admin salah. Silakan masukkan kode 12345678.'
   });
 });
 
