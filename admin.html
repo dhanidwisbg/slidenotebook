@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="id" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Portal — Handbook Flipbook</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>" />
+    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/admin.css" />
+  </head>
+  <body>
+    <div id="admin-app">
+      <!-- ================================================================ -->
+      <!-- 1. LOGIN SCREEN (Strictly shown if not authenticated)            -->
+      <!-- ================================================================ -->
+      <section id="login-screen" class="login-container" style="display: none;">
+        <div class="login-card">
+          <div class="login-brand">
+            <div class="brand-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h2>Admin Portal</h2>
+            <p class="login-subtitle">Masuk untuk mengelola, membuat, dan mempublikasikan handbook digital.</p>
+          </div>
+
+          <form id="login-form" class="login-form">
+            <div class="input-group">
+              <label class="input-label" for="login-email">Email Admin</label>
+              <input type="email" id="login-email" class="input-text" placeholder="admin@flipbook.id" value="admin@flipbook.id" required />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label" for="login-password">Kata Sandi</label>
+              <input type="password" id="login-password" class="input-text" placeholder="••••••••" value="admin123" required />
+            </div>
+
+            <div id="login-error" class="login-error-msg" style="display: none;"></div>
+
+            <button type="submit" class="btn-primary-action" id="btn-submit-login">
+              <span>Masuk ke Dashboard Admin</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+
+            <div class="login-hint-box">
+              <span class="hint-title">🔑 Kredensial Default Sistem:</span>
+              <span>Email: <code>admin@flipbook.id</code></span>
+              <span>Kata Sandi: <code>admin123</code></span>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================================================================ -->
+      <!-- 2. ADMIN DASHBOARD & EDITOR (Protected by Server Session)        -->
+      <!-- ================================================================ -->
+      <div id="admin-main" style="display: none;">
+        <!-- Top Navbar -->
+        <header class="navbar admin-navbar">
+          <div class="nav-brand">
+            <div class="brand-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                <path d="M6 2v20"/>
+              </svg>
+            </div>
+            <div class="brand-title">
+              <span>Handbook Flipbook</span>
+              <span class="brand-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-success); border-color: rgba(16, 185, 129, 0.3);">ADMIN</span>
+            </div>
+          </div>
+
+          <div class="admin-nav-right">
+            <span class="admin-user-tag" id="admin-user-email">admin@flipbook.id</span>
+
+            <button class="btn-pill" id="btn-preview-reader" title="Pratinjau tampilan pembaca persis seperti aslinya">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span>Pratinjau</span>
+            </button>
+
+            <button class="btn-pill btn-publish-highlight" id="btn-open-publish-modal" title="Publikasikan ke server dan dapatkan link baca">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span>Publikasikan</span>
+            </button>
+
+            <button class="btn-icon" id="btn-logout" title="Keluar / Logout">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="edit-container">
+          <!-- Handbook Identity Card -->
+          <section class="edit-header-card">
+            <div class="meta-inputs-grid">
+              <div class="input-group">
+                <label class="input-label" for="hb-title">Judul Handbook</label>
+                <input type="text" id="hb-title" class="input-text" placeholder="Contoh: Handbook Karyawan & Budaya Kerja 2026" />
+              </div>
+              <div class="input-group">
+                <label class="input-label" for="hb-subtitle">Subjudul / Penulis</label>
+                <input type="text" id="hb-subtitle" class="input-text" placeholder="Contoh: Tim People Operations" />
+              </div>
+            </div>
+
+            <div class="settings-bar">
+              <!-- Orientasi (FR-3) -->
+              <div class="setting-item">
+                <span class="input-label">Orientasi Buku:</span>
+                <div class="toggle-group" id="orient-toggle">
+                  <button type="button" class="toggle-btn active" id="btn-orient-port" data-orient="portrait">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                    </svg>
+                    <span>Portrait (A-Series)</span>
+                  </button>
+                  <button type="button" class="toggle-btn" id="btn-orient-land" data-orient="landscape">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                    <span>Landscape (16:9)</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Warna Sampul (FR-7) -->
+              <div class="setting-item">
+                <span class="input-label">Warna Sampul Buku:</span>
+                <div class="color-swatches" id="admin-color-swatches">
+                  <div class="color-dot active" style="background-color: #1e293b;" data-color="#1e293b" title="Obsidian Slate"></div>
+                  <div class="color-dot" style="background-color: #0f2b48;" data-color="#0f2b48" title="Royal Navy"></div>
+                  <div class="color-dot" style="background-color: #0d3829;" data-color="#0d3829" title="Emerald Forest"></div>
+                  <div class="color-dot" style="background-color: #4a1c1d;" data-color="#4a1c1d" title="Velvet Wine"></div>
+                  <div class="color-dot" style="background-color: #3b2818;" data-color="#3b2818" title="Classic Leather"></div>
+                  <input type="color" id="admin-custom-color" class="color-picker-native" value="#1e293b" title="Pilih Warna Kustom" />
+                </div>
+              </div>
+
+              <!-- Server Shared Storage Status -->
+              <div class="setting-item">
+                <span class="feature-badge" id="admin-storage-badge" style="color: var(--accent-success); border-color: rgba(16, 185, 129, 0.3);">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span>Terhubung ke Server Bersama</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Background Music Section (FR-11) -->
+            <div class="admin-audio-card">
+              <div class="audio-card-header">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18V5l12-2v13"></path>
+                    <circle cx="6" cy="18" r="3"></circle>
+                    <circle cx="18" cy="16" r="3"></circle>
+                  </svg>
+                  <strong style="font-size: 0.88rem;">Musik Latar Pembaca</strong>
+                </div>
+                <span id="audio-file-status" class="audio-status-pill">Belum ada musik</span>
+              </div>
+
+              <div class="audio-card-body">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem;">
+                  <button type="button" class="btn-pill" id="btn-trigger-audio-upload">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span>Pilih File Audio (Maks 12 MB)</span>
+                  </button>
+                  <button type="button" class="btn-icon" id="btn-test-audio-play" title="Uji Putar Musik" style="display: none;">
+                    ▶
+                  </button>
+                  <button type="button" class="btn-icon" id="btn-remove-audio" title="Hapus Musik" style="display: none; color: var(--accent-danger);">
+                    ✕
+                  </button>
+                  <input type="file" id="admin-audio-input" accept="audio/*,.mp3,.wav,.ogg,.m4a" style="display: none;" />
+                </div>
+
+                <div class="audio-options-row">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="chk-audio-autoplay" checked />
+                    <span>Putar otomatis saat pembaca pertama menyentuh buku</span>
+                  </label>
+
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Volume Awal:</span>
+                    <input type="range" id="admin-audio-volume" min="0" max="1" step="0.05" value="0.45" class="slider-input" style="width: 110px;" />
+                    <span id="volume-val-label" style="font-size: 0.78rem; font-weight: 600; width: 32px;">45%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Upload Dropzone (Multi-Images, PDF, and PPT/PPTX) -->
+          <section class="upload-dropzone" id="admin-upload-zone">
+            <input type="file" id="admin-file-input" multiple accept="image/jpeg,image/png,image/webp,application/pdf,.pdf,.ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" style="display: none;" />
+            <div class="dropzone-icon-wrap">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <h2 class="dropzone-title">Tarik & Lepas File PowerPoint (.pptx), Dokumen PDF, atau Gambar ke Sini</h2>
+            <p class="dropzone-desc">
+              Pilih file presentasi PowerPoint (.pptx / .ppt), file PDF, atau kumpulan gambar slide JPEG/PNG. Sistem akan otomatis memproses dan menyusun setiap slide menjadi buku digital.
+            </p>
+            <div class="dropzone-badges">
+              <span class="feature-badge" style="color: #f97316; border-color: rgba(249, 115, 22, 0.4);">✨ Auto-Konversi File PowerPoint (.pptx / .ppt)</span>
+              <span class="feature-badge">✓ Dokumen PDF Langsung Diekstrak</span>
+              <span class="feature-badge">✓ Kompresi Otomatis Maks 1800 px</span>
+              <span class="feature-badge">✓ Urutan Numerik Cerdas</span>
+            </div>
+          </section>
+
+          <!-- Mismatch Alert Banner -->
+          <div class="alert-banner" id="admin-mismatch-banner" style="display: none;">
+            <div class="alert-content">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span id="admin-mismatch-text">Beberapa gambar memiliki orientasi berbeda dari buku.</span>
+            </div>
+            <button class="btn-pill" id="btn-auto-switch-orient" style="font-size: 0.76rem; padding: 0.25rem 0.65rem;">
+              Sesuaikan Orientasi Buku
+            </button>
+          </div>
+
+          <!-- Page Cards Section -->
+          <section class="pages-section">
+            <div class="pages-section-header">
+              <h3 class="section-title">
+                <span>Daftar Halaman Handbook</span>
+                <span class="brand-badge" id="admin-page-count">0 Halaman</span>
+              </h3>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button class="btn-pill" id="btn-clear-all-pages" style="color: var(--accent-danger); border-color: rgba(239, 68, 68, 0.35);" title="Hapus semua slide contoh / kosongkan buku">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Kosongkan Semua Slide</span>
+                </button>
+                <button class="btn-pill" id="btn-load-sample-admin">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                  <span>Muat Contoh Slide</span>
+                </button>
+                <button class="btn-pill" id="btn-add-more-admin">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>Tambah File</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="pages-grid" id="admin-pages-grid">
+              <!-- Dynamically populated cards -->
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- 3. PUBLISH & SHARING MODAL                                       -->
+      <!-- ================================================================ -->
+      <div class="modal-overlay" id="publish-modal" style="display: none;">
+        <div class="modal-box">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span>Publikasikan Handbook</span>
+            </h3>
+            <button class="btn-icon" id="btn-close-publish-modal" style="width: 28px; height: 28px;">✕</button>
+          </div>
+
+          <p style="font-size: 0.86rem; color: var(--text-muted);">
+            Handbook akan disimpan ke server bersama. Pembaca dapat membuka link ini secara langsung tanpa perlu login.
+          </p>
+
+          <!-- Unique Link Box -->
+          <div class="input-group">
+            <label class="input-label">Link Baca Publik</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" id="public-link-input" class="input-text" readonly style="font-family: monospace; font-size: 0.85rem;" />
+              <button type="button" class="btn-pill" id="btn-copy-public-link" style="white-space: nowrap;">
+                <span>Salin Link</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Reader Password (Optional) -->
+          <div class="input-group">
+            <label class="input-label" for="reader-password-input">
+              <span>Kata Sandi Baca (Opsional)</span>
+            </label>
+            <input type="text" id="reader-password-input" class="input-text" placeholder="Kosongkan jika buku bebas dibaca siapa saja" />
+            <span style="font-size: 0.74rem; color: var(--text-faint);">
+              Jika diisi, pembaca wajib memasukkan kata sandi ini sebelum buku dapat dibuka.
+            </span>
+          </div>
+
+          <!-- Link Active Status Toggle -->
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color);">
+            <div>
+              <strong style="font-size: 0.86rem; display: block;" id="link-status-label">Status Link: Aktif</strong>
+              <span style="font-size: 0.74rem; color: var(--text-muted);" id="link-status-desc">Pembaca dapat mengakses buku ini.</span>
+            </div>
+            <button type="button" class="btn-pill" id="btn-toggle-link-active" style="font-size: 0.78rem;">
+              Nonaktifkan Link
+            </button>
+          </div>
+
+          <!-- Save Updates Button -->
+          <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem;">
+            <button type="button" class="btn-pill" id="btn-cancel-publish">Tutup</button>
+            <button type="button" class="btn-primary-action" id="btn-confirm-publish" style="padding: 0.55rem 1.25rem;">
+              <span>Simpan Perubahan ke Link Ini</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- 4. PREVIEW MODAL                                                 -->
+      <!-- ================================================================ -->
+      <div class="modal-overlay preview-overlay" id="preview-modal" style="display: none; padding: 0;">
+        <div class="preview-frame-container">
+          <div class="preview-frame-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="brand-badge" style="background: rgba(56, 189, 248, 0.2);">PRATINJAU PEMBACA</span>
+              <span style="font-size: 0.82rem; color: var(--text-muted);">Tampilan persis seperti yang dilihat pembaca</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn-pill" id="btn-open-preview-tab">Buka di Tab Baru</button>
+              <button class="btn-icon" id="btn-close-preview-modal" style="width: 32px; height: 32px;">✕</button>
+            </div>
+          </div>
+          <iframe id="preview-iframe" class="preview-iframe" src="about:blank"></iframe>
+        </div>
+      </div>
+
+      <!-- Toast Notification -->
+      <div class="toast" id="admin-toast"></div>
+    </div>
+
+    <script type="module" src="/src/admin.js"></script>
+  </body>
+</html>

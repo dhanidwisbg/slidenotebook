@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="id" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Membaca Handbook — Flipbook Digital</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'/><path d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/></svg>" />
+    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/read.css" />
+  </head>
+  <body>
+    <div id="reader-app">
+      <!-- Top Minimal Header -->
+      <header class="reader-top-bar" id="reader-top-bar">
+        <div class="reader-book-identity">
+          <h1 id="reader-hb-title" class="reader-title">Handbook Digital</h1>
+          <span id="reader-hb-subtitle" class="reader-subtitle"></span>
+        </div>
+
+        <div class="reader-top-actions">
+          <!-- Ambience Environment Selector -->
+          <select id="reader-ambient-select" class="select-custom reader-glass-select">
+            <option value="studio">Ambience: Studio Dark</option>
+            <option value="library">Ambience: Luxury Library Wood</option>
+            <option value="warm">Ambience: Warm Study Cafe</option>
+            <option value="clean">Ambience: Clean Obsidian</option>
+          </select>
+
+          <!-- Light/Dark Mode Toggle -->
+          <button class="btn-icon" id="btn-reader-theme" title="Ganti Mode Terang / Gelap">
+            <svg id="reader-theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Reader Viewport -->
+      <main class="reader-viewport" id="reader-viewport">
+        <!-- Stage: 3D Book Base & Flipbook -->
+        <div class="book-stage" id="book-stage">
+          <div class="book-base" id="book-base"></div>
+          <div class="flipbook-container" id="flipbook-container"></div>
+        </div>
+
+        <!-- Floating Reader Dock -->
+        <nav class="reader-dock" id="reader-dock" aria-label="Kontrol Pembaca">
+          <button class="dock-btn" id="btn-prev-page" title="Halaman Sebelumnya (Panah Kiri)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+
+          <span class="dock-page-badge" id="page-indicator">Sampul Depan</span>
+
+          <button class="dock-btn" id="btn-next-page" title="Halaman Berikutnya (Panah Kanan / Spasi)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+
+          <div class="dock-divider"></div>
+
+          <!-- TOC Drawer Toggle -->
+          <button class="dock-btn" id="btn-toggle-toc" title="Daftar Halaman & Navigasi Cepat">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </button>
+
+          <!-- Flip Paper Sound Toggle -->
+          <button class="dock-btn active" id="btn-toggle-sound" title="Efek Suara Membalik Kertas">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+          </button>
+
+          <!-- BGM Control with Volume Slider (if admin added audio) -->
+          <div class="audio-dock-group" id="reader-audio-group" style="display: none;">
+            <button class="dock-btn" id="btn-toggle-bgm" title="Musik Latar (Play / Pause)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18V5l12-2v13"></path>
+                <circle cx="6" cy="18" r="3"></circle>
+                <circle cx="18" cy="16" r="3"></circle>
+              </svg>
+            </button>
+            <div class="volume-slider-popup">
+              <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">Volume Musik</span>
+              <input type="range" id="bgm-volume-slider" class="slider-input" min="0" max="1" step="0.05" value="0.45" />
+            </div>
+          </div>
+
+          <!-- Fullscreen Toggle -->
+          <button class="dock-btn" id="btn-toggle-fullscreen" title="Layar Penuh (F)">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+            </svg>
+          </button>
+        </nav>
+
+        <!-- Slide-Up Thumbnail Drawer -->
+        <aside class="thumbnail-drawer" id="thumbnail-drawer" aria-label="Daftar Isi Thumbnail">
+          <div class="drawer-header">
+            <div class="drawer-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+              </svg>
+              <span>Daftar Halaman & Navigasi Cepat</span>
+            </div>
+            <button class="btn-icon" id="btn-close-drawer" style="width: 28px; height: 28px;">✕</button>
+          </div>
+          <div class="drawer-scroll-track" id="drawer-thumbnails-track">
+            <!-- Dynamically populated -->
+          </div>
+        </aside>
+      </main>
+
+      <!-- ================================================================ -->
+      <!-- PASSWORD MODAL (Shown if handbook is protected with password)    -->
+      <!-- ================================================================ -->
+      <div class="modal-overlay" id="password-modal" style="display: none;">
+        <div class="modal-box" style="text-align: center;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto; color: var(--accent-primary);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h3 class="modal-title" id="pwd-hb-title">Handbook Terproteksi</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Buku ini dilindungi dengan kata sandi baca oleh administrator. Silakan masukkan kata sandi untuk membukanya.
+          </p>
+
+          <form id="pwd-form" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+            <input type="password" id="input-reader-pwd" class="input-text" placeholder="Masukkan kata sandi..." style="text-align: center; font-size: 1rem;" required />
+            <div id="pwd-error-msg" class="login-error-msg" style="display: none;"></div>
+            <button type="submit" class="btn-primary-action">
+              <span>Buka Handbook</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- FRIENDLY ERROR SCREEN (If invalid link or disabled)              -->
+      <!-- ================================================================ -->
+      <div class="error-screen" id="error-screen" style="display: none;">
+        <div class="error-card">
+          <div class="error-icon-box">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <h2 id="error-title">Handbook Tidak Tersedia</h2>
+          <p id="error-desc" class="error-desc">
+            Link handbook yang Anda buka tidak valid, belum dipublikasikan, atau telah dinonaktifkan oleh administrator.
+          </p>
+          <div style="margin-top: 1rem;">
+            <a href="/" class="btn-pill" style="text-decoration: none;">Kembali ke Beranda</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Notification -->
+      <div class="toast" id="reader-toast"></div>
+    </div>
+
+    <script type="module" src="/src/read.js"></script>
+  </body>
+</html>
