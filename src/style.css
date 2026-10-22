@@ -45,15 +45,15 @@
 }
 
 [data-theme='light'] {
-  --bg-main: #f1f5f9;
+  --bg-main: #f8fafc;
   --bg-surface: #ffffff;
-  --bg-card: #f8fafc;
+  --bg-card: #ffffff;
   --bg-card-hover: #f1f5f9;
   --border-color: rgba(0, 0, 0, 0.08);
   --border-hover: rgba(2, 132, 199, 0.4);
 
   --text-main: #0f172a;
-  --text-muted: #475569;
+  --text-muted: #64748b;
   --text-faint: #94a3b8;
 
   --accent-primary: #0284c7;
@@ -61,10 +61,96 @@
   --accent-glow: rgba(2, 132, 199, 0.15);
   --accent-secondary: #6366f1;
 
-  --dock-bg: rgba(255, 255, 255, 0.82);
+  --dock-bg: rgba(255, 255, 255, 0.9);
   --dock-border: rgba(0, 0, 0, 0.1);
 
   --paper-edge-color: #cbd5e1;
+}
+
+/* Global Light Mode Overrides */
+[data-theme='light'] .navbar {
+  background: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='light'] .input-text,
+[data-theme='light'] .select-custom {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #0f172a;
+}
+
+[data-theme='light'] .input-text:focus,
+[data-theme='light'] .select-custom:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+[data-theme='light'] .btn-pill {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #0f172a;
+}
+
+[data-theme='light'] .btn-pill:hover {
+  background: #f1f5f9;
+  border-color: var(--accent-primary);
+}
+
+[data-theme='light'] .btn-icon {
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #64748b;
+}
+
+[data-theme='light'] .btn-icon:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+[data-theme='light'] .reader-viewport {
+  background: radial-gradient(circle at center, #f8fafc 0%, #cbd5e1 100%) !important;
+}
+
+[data-theme='light'] .book-base {
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18), 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='light'] .dock-btn {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+}
+
+[data-theme='light'] .dock-btn:hover {
+  background: #f1f5f9;
+  border-color: var(--accent-primary);
+}
+
+[data-theme='light'] .dock-page-indicator {
+  color: #0f172a;
+}
+
+[data-theme='light'] .modal-backdrop {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+[data-theme='light'] .modal-card,
+[data-theme='light'] .modal-box {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme='light'] .drawer-panel {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+}
+
+[data-theme='light'] .drawer-thumb-card {
+  background: #f8fafc;
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 /* Reader Ambient Environments */

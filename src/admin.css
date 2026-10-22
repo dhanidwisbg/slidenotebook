@@ -224,3 +224,71 @@
   height: 100%;
   border: none;
 }
+
+/* ==========================================================================
+   ADMIN LIGHT MODE STYLES
+   ========================================================================== */
+[data-theme='light'] .login-container {
+  background: radial-gradient(circle at center, #ffffff 0%, #e2e8f0 100%);
+}
+
+[data-theme='light'] .login-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='light'] .login-hint-box {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='light'] .admin-navbar {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='light'] .admin-user-tag {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #475569;
+}
+
+[data-theme='light'] .edit-header-card,
+[data-theme='light'] .edit-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme='light'] .admin-audio-card {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='light'] .page-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme='light'] .page-title-input {
+  background: #f8fafc;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+}
+
+[data-theme='light'] .page-card-footer {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='light'] .btn-card-action {
+  background: #f8fafc;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #475569;
+}
+
+[data-theme='light'] .btn-card-action:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}

@@ -10,6 +10,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/src/style.css" />
+
+    <!-- Instant Theme Loader (prevents FOUC) -->
+    <script>
+      (function() {
+        const theme = localStorage.getItem('hfb_theme') || 'dark';
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
     <style>
       :root {
         --landing-glow: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.15) 0%, rgba(99, 102, 241, 0.08) 35%, transparent 70%);
@@ -20,6 +29,7 @@
         background-color: var(--bg-main);
         color: var(--text-main);
         overflow-x: hidden;
+        transition: background-color 0.3s ease, color 0.3s ease;
       }
 
       h1, h2, h3, h4, .brand-title {
@@ -31,7 +41,7 @@
         position: sticky;
         top: 0;
         z-index: 100;
-        background: rgba(9, 13, 22, 0.75);
+        background: rgba(9, 13, 22, 0.8);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border-bottom: 1px solid var(--border-color);
@@ -39,6 +49,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        transition: background 0.3s ease, border-color 0.3s ease;
       }
 
       .nav-brand-group {
@@ -70,6 +81,12 @@
         color: var(--accent-primary);
       }
 
+      .nav-right-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
       .btn-nav-cta {
         display: inline-flex;
         align-items: center;
@@ -93,7 +110,7 @@
       /* Hero Section */
       .hero-section {
         position: relative;
-        padding: 5rem 1.5rem 4rem;
+        padding: 6rem 1.5rem 5rem;
         text-align: center;
         background: var(--landing-glow);
         display: flex;
@@ -113,7 +130,6 @@
         font-size: 0.85rem;
         font-weight: 600;
         margin-bottom: 1.5rem;
-        animation: fadeIn 0.8s ease-out;
       }
 
       .hero-title {
@@ -142,7 +158,7 @@
         align-items: center;
         justify-content: center;
         gap: 1rem;
-        margin-bottom: 3.5rem;
+        margin-bottom: 2.5rem;
       }
 
       .btn-hero-primary {
@@ -188,97 +204,34 @@
         transform: translateY(-2px);
       }
 
-      /* Showcase Mockup */
-      .showcase-wrapper {
-        width: 100%;
-        max-width: 920px;
-        margin: 0 auto;
-        position: relative;
-        perspective: 1200px;
-      }
-
-      .showcase-card {
-        background: var(--bg-surface);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        padding: 2rem;
-        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(56, 189, 248, 0.12);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .showcase-preview-box {
-        width: 100%;
-        height: 380px;
-        max-height: 50vh;
-        border-radius: 16px;
-        background: #111827;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .showcase-cover-art {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        opacity: 0.85;
-        transition: transform 0.5s ease;
-      }
-
-      .showcase-preview-box:hover .showcase-cover-art {
-        transform: scale(1.03);
-      }
-
-      .showcase-overlay-cta {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(9, 13, 22, 0.2) 0%, rgba(9, 13, 22, 0.85) 100%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-end;
-        padding: 2rem;
-        text-align: center;
-      }
-
-      .showcase-hb-title {
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin-bottom: 0.4rem;
-        color: #ffffff;
-      }
-
-      .showcase-hb-meta {
-        font-size: 0.95rem;
-        color: var(--text-muted);
-        margin-bottom: 1.25rem;
-      }
-
       .floating-badges-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.75rem;
+        gap: 0.85rem;
         justify-content: center;
-        margin-top: 1.5rem;
+        max-width: 820px;
+        margin: 0 auto;
       }
 
       .floating-badge {
         display: inline-flex;
         align-items: center;
-        gap: 0.4rem;
+        gap: 0.45rem;
         background: rgba(15, 23, 42, 0.75);
         border: 1px solid var(--border-color);
-        padding: 0.45rem 0.9rem;
+        padding: 0.55rem 1.1rem;
         border-radius: 9999px;
-        font-size: 0.85rem;
+        font-size: 0.88rem;
+        font-weight: 500;
         color: var(--text-muted);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s ease;
+      }
+
+      .floating-badge:hover {
+        border-color: var(--accent-primary);
+        color: var(--text-main);
+        transform: translateY(-2px);
       }
 
       /* Features Section */
@@ -366,7 +319,7 @@
         margin: 0;
       }
 
-      /* How It Works Section */
+      /* How to Read Section */
       .steps-section {
         padding: 5rem 1.5rem 6rem;
         background: rgba(15, 23, 42, 0.4);
@@ -450,9 +403,70 @@
         font-size: 0.88rem;
       }
 
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+      /* ====================================================================
+         LIGHT THEME SPECIFICS FOR LANDING PAGE
+         ==================================================================== */
+      [data-theme='light'] body {
+        background-color: #f8fafc;
+        color: #0f172a;
+      }
+
+      [data-theme='light'] .landing-nav {
+        background: rgba(255, 255, 255, 0.88);
+        border-bottom-color: rgba(0, 0, 0, 0.08);
+      }
+
+      [data-theme='light'] .hero-section {
+        background: radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.1) 0%, rgba(99, 102, 241, 0.04) 40%, transparent 70%);
+      }
+
+      [data-theme='light'] .hero-title {
+        background: linear-gradient(180deg, #0f172a 30%, #475569 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      [data-theme='light'] .btn-hero-secondary {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.12);
+        color: #0f172a;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      }
+
+      [data-theme='light'] .btn-hero-secondary:hover {
+        background: #f1f5f9;
+        border-color: var(--accent-primary);
+      }
+
+      [data-theme='light'] .floating-badge {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.08);
+        color: #475569;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+
+      [data-theme='light'] .feature-card,
+      [data-theme='light'] .step-item {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      }
+
+      [data-theme='light'] .steps-section {
+        background: rgba(241, 245, 249, 0.6);
+        border-top-color: rgba(0, 0, 0, 0.06);
+        border-bottom-color: rgba(0, 0, 0, 0.06);
+      }
+
+      [data-theme='light'] .cta-banner-box {
+        background: linear-gradient(135deg, #ffffff, #f1f5f9);
+        border-color: rgba(2, 132, 199, 0.25);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.06), 0 0 30px rgba(2, 132, 199, 0.08);
+      }
+
+      [data-theme='light'] .landing-footer {
+        border-top-color: rgba(0, 0, 0, 0.08);
+        background: #ffffff;
       }
 
       @media (max-width: 768px) {
@@ -462,8 +476,8 @@
         .nav-links {
           display: none;
         }
-        .showcase-card {
-          padding: 1.25rem;
+        .hero-section {
+          padding: 4rem 1rem 3.5rem;
         }
       }
     </style>
@@ -486,13 +500,31 @@
         <li><a href="#how-to-read">Cara Membaca</a></li>
       </ul>
 
-      <a href="/read.html?id=default" class="btn-nav-cta" id="btn-nav-read">
-        <span>Buka Handbook</span>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </a>
+      <div class="nav-right-actions">
+        <!-- Theme Toggle Button (Light / Dark) -->
+        <button class="btn-icon" id="btn-theme-toggle" title="Ganti Mode Terang / Gelap" aria-label="Toggle Theme">
+          <svg id="theme-toggle-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+
+        <!-- CTA Read Handbook -->
+        <a href="/read.html?id=default" class="btn-nav-cta" id="btn-nav-read">
+          <span>Buka Handbook</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
     </header>
 
     <!-- Main Content -->
@@ -531,39 +563,20 @@
           </a>
         </div>
 
-        <!-- Showcase Mockup -->
-        <div class="showcase-wrapper">
-          <div class="showcase-card">
-            <div class="showcase-preview-box">
-              <img id="showcase-cover-img" src="" alt="Handbook Cover Preview" class="showcase-cover-art" style="display:none;" />
-              <div class="showcase-overlay-cta">
-                <span class="brand-badge" style="background: rgba(56, 189, 248, 0.2); color: var(--accent-primary); margin-bottom: 0.6rem;">
-                  HANDBOOK SIAP DIBACA
-                </span>
-                <h3 class="showcase-hb-title" id="showcase-title">Handbook Budaya & Desain Sistem</h3>
-                <p class="showcase-hb-meta" id="showcase-subtitle">Panduan Interaktif & Presentasi Slide</p>
-                
-                <a href="/read.html?id=default" class="btn-hero-primary" style="padding: 0.75rem 1.75rem; font-size: 0.95rem;">
-                  <span>Buka Lembaran Buku ➔</span>
-                </a>
-              </div>
-            </div>
-
-            <div class="floating-badges-row">
-              <span class="floating-badge">
-                <span>📖</span> Dua Halaman Berdampingan (Spread View)
-              </span>
-              <span class="floating-badge">
-                <span>✨</span> Efek 3D Page-Flip Realistis
-              </span>
-              <span class="floating-badge">
-                <span>🎵</span> Musik Latar Pengiring
-              </span>
-              <span class="floating-badge">
-                <span>📱</span> Responsif Desktop & Mobile
-              </span>
-            </div>
-          </div>
+        <!-- 4 Key Highlights Row (Clean & Balanced) -->
+        <div class="floating-badges-row">
+          <span class="floating-badge">
+            <span>📖</span> Dua Halaman Berdampingan (Spread View)
+          </span>
+          <span class="floating-badge">
+            <span>✨</span> Efek 3D Page-Flip Realistis
+          </span>
+          <span class="floating-badge">
+            <span>🎵</span> Musik Latar Pengiring
+          </span>
+          <span class="floating-badge">
+            <span>📱</span> Responsif Desktop & Mobile
+          </span>
         </div>
       </section>
 
@@ -717,7 +730,7 @@
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
             <path d="M6 2v20"/>
           </svg>
-          <span style="font-weight: 700; color: #ffffff;">Handbook Flipbook</span>
+          <span style="font-weight: 700;">Handbook Flipbook</span>
         </div>
         <div>
           © 2026 Handbook Flipbook. Platform Dokumen & Presentasi Interaktif.
@@ -725,47 +738,52 @@
       </div>
     </footer>
 
-    <!-- Script to dynamically load latest title and preview if available -->
+    <!-- Theme Toggle Script -->
     <script type="module">
-      async function loadPreview() {
-        try {
-          let hb = null;
-          // Try local storage first
-          const cached = localStorage.getItem('hfb_handbook_default');
-          if (cached) {
-            hb = JSON.parse(cached);
-          } else {
-            // Try fetching static or API
-            const res = await fetch('/api/public/handbook/default').catch(() => null);
-            if (res && res.ok) {
-              hb = await res.json();
-            } else {
-              const res2 = await fetch('/data/handbooks.json').catch(() => null);
-              if (res2 && res2.ok) {
-                const list = await res2.json();
-                hb = list[0];
-              }
-            }
-          }
+      const btnTheme = document.getElementById('btn-theme-toggle');
 
-          if (hb) {
-            if (hb.title) {
-              document.getElementById('showcase-title').textContent = hb.title;
-            }
-            if (hb.subtitle) {
-              document.getElementById('showcase-subtitle').textContent = hb.subtitle;
-            }
-            if (hb.pages && hb.pages.length > 0 && hb.pages[0].dataUrl) {
-              const img = document.getElementById('showcase-cover-img');
-              img.src = hb.pages[0].dataUrl;
-              img.style.display = 'block';
-            }
-          }
-        } catch (e) {
-          // Keep defaults
+      function syncThemeUI(theme) {
+        document.documentElement.dataset.theme = theme;
+        if (!btnTheme) return;
+
+        if (theme === 'light') {
+          // Show Moon icon for light mode
+          btnTheme.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          `;
+          btnTheme.title = 'Beralih ke Mode Gelap';
+        } else {
+          // Show Sun icon for dark mode
+          btnTheme.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          `;
+          btnTheme.title = 'Beralih ke Mode Terang';
         }
       }
-      loadPreview();
+
+      const initialTheme = localStorage.getItem('hfb_theme') || 'dark';
+      syncThemeUI(initialTheme);
+
+      if (btnTheme) {
+        btnTheme.addEventListener('click', () => {
+          const current = document.documentElement.dataset.theme;
+          const next = current === 'dark' ? 'light' : 'dark';
+          localStorage.setItem('hfb_theme', next);
+          syncThemeUI(next);
+        });
+      }
     </script>
   </body>
 </html>
