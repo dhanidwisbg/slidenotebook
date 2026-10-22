@@ -1,4 +1,4 @@
-﻿// /api/admin/upload-audio - Upload audio file to Vercel Blob
+// /api/admin/upload-audio - Upload audio file to Vercel Blob
 import { setCORSHeaders, requireAdmin, BLOB_TOKEN } from '../_shared.js';
 import { put } from '@vercel/blob';
 
@@ -18,35 +18,30 @@ export default async function handler(req, res) {
   for await (const chunk of req) chunks.push(chunk);
   const body = Buffer.concat(chunks);
 
-  // Parse multipart manually - use Vercel's built-in multipart via formidable
-  // Actually, use the request directly: Vercel Blob has a put() that accepts streams
-  // We parse the Content-Type to get filename
   const contentType = req.headers['content-type'] || '';
-  
   if (!contentType.includes('multipart/form-data')) {
     return res.status(400).json({ error: 'Content-Type must be multipart/form-data' });
   }
 
-  // Extract boundary
+  // Extract boundary safely, handling possible surrounding quotes
   const boundaryMatch = contentType.match(/boundary=([^;]+)/);
   if (!boundaryMatch) return res.status(400).json({ error: 'Missing multipart boundary' });
-  const boundary = '--' + boundaryMatch[1].trim();
+  const rawBoundary = boundaryMatch[1].trim().replace(/^["']|["']$/g, '');
+  const boundary = '--' + rawBoundary;
 
-  // Simple multipart parser for single file
   const parts = [];
-  const bodyStr = body.toString('binary');
   const boundaryBuf = Buffer.from(boundary, 'binary');
-  
+
   let pos = 0;
   while (pos < body.length) {
     const boundaryIdx = body.indexOf(boundaryBuf, pos);
     if (boundaryIdx === -1) break;
     pos = boundaryIdx + boundaryBuf.length;
-    if (body[pos] === 45 && body[pos+1] === 45) break; // --
+    if (body[pos] === 45 && body[pos + 1] === 45) break; // --
     if (body[pos] === 13) pos += 2; // \r\n
 
     // Read headers
-    let headerEnd = body.indexOf(Buffer.from('\r\n\r\n'), pos);
+    const headerEnd = body.indexOf(Buffer.from('\r\n\r\n'), pos);
     if (headerEnd === -1) break;
     const headers = body.slice(pos, headerEnd).toString();
     pos = headerEnd + 4;
@@ -75,26 +70,38 @@ export default async function handler(req, res) {
 
   const filename = filePart.filename;
   const ext = filename.split('.').pop().toLowerCase();
-  const allowedExts = ['mp3', 'wav', 'ogg', 'aac', 'm4a'];
+  const allowedExts = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'mp4'];
   if (!allowedExts.includes(ext)) {
     return res.status(400).json({ error: 'Format file audio tidak valid. Harap unggah MP3, WAV, OGG, atau M4A.' });
   }
 
-  if (filePart.data.length > 12 * 1024 * 1024) {
-    return res.status(400).json({ error: 'File audio melebihi batas 12 MB.' });
+  if (filePart.data.length > 25 * 1024 * 1024) {
+    return res.status(400).json({ error: 'File audio melebihi batas 25 MB.' });
   }
+
+  const mimeMap = {
+    mp3: 'audio/mpeg',
+    wav: 'audio/wav',
+    ogg: 'audio/ogg',
+    aac: 'audio/aac',
+    m4a: 'audio/mp4',
+    mp4: 'audio/mp4'
+  };
+  const mimeType = mimeMap[ext] || ('audio/' + ext);
+  const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
 
   let audioUrl;
   if (BLOB_TOKEN) {
     try {
-      const blob = await put('audio/' + Date.now() + '-' + filename, filePart.data, {
+      const blob = await put('audio/' + Date.now() + '-' + safeName, filePart.data, {
         access: 'public',
         token: BLOB_TOKEN,
-        contentType: 'audio/' + ext
+        contentType: mimeType,
+        allowOverwrite: true
       });
       audioUrl = blob.url;
     } catch (e) {
-      return res.status(500).json({ error: 'Gagal mengunggah audio: ' + e.message });
+      return res.status(500).json({ error: 'Gagal mengunggah audio ke cloud: ' + e.message });
     }
   } else {
     return res.status(500).json({ error: 'Storage tidak dikonfigurasi (BLOB_READ_WRITE_TOKEN missing).' });

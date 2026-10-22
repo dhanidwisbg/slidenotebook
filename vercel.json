@@ -15,6 +15,10 @@
     "api/admin/upload-image.js": {
       "maxDuration": 30,
       "memory": 512
+    },
+    "api/admin/blob-upload.js": {
+      "maxDuration": 30,
+      "memory": 512
     }
   },
   "rewrites": [

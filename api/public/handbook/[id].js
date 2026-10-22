@@ -1,4 +1,4 @@
-﻿// /api/public/handbook/[id] - Public reader with PIN + direct key
+// /api/public/handbook/[id] - Public reader with PIN + direct key
 import { setCORSHeaders, readHandbooksDB } from '../../_shared.js';
 
 export default async function handler(req, res) {
@@ -18,7 +18,10 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: 'not_found', message: 'Handbook tidak ditemukan atau link sudah tidak berlaku.' });
   }
   if (!handbook.isPublished) {
-    return res.status(403).json({ error: 'unpublished', message: 'Handbook ini belum dipublikasikan oleh pemiliknya.' });
+    const isPreview = req.query.preview === '1' || id === 'preview';
+    if (!isPreview) {
+      return res.status(403).json({ error: 'unpublished', message: 'Handbook ini belum dipublikasikan oleh pemiliknya.' });
+    }
   }
   if (handbook.isActive === false) {
     return res.status(403).json({ error: 'disabled', message: 'Handbook ini telah dinonaktifkan oleh administrator.' });

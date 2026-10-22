@@ -141,6 +141,18 @@ class BgmPlayer {
     if (this.currentTrackType === 'custom' && this.customAudioUrl) {
       this.audioElement.play().catch((err) => {
         console.log('Autoplay deferred until user clicks:', err);
+        const retryOnGesture = () => {
+          if (this.isPlaying && this.audioElement.paused) {
+            this.audioElement.play().then(() => {
+              window.removeEventListener('click', retryOnGesture);
+              window.removeEventListener('keydown', retryOnGesture);
+              window.removeEventListener('touchstart', retryOnGesture);
+            }).catch(() => {});
+          }
+        };
+        window.addEventListener('click', retryOnGesture, { once: true, passive: true });
+        window.addEventListener('keydown', retryOnGesture, { once: true, passive: true });
+        window.addEventListener('touchstart', retryOnGesture, { once: true, passive: true });
       });
     } else if (this.currentTrackType === 'preset') {
       this.startSynthPreset(this.currentPreset);

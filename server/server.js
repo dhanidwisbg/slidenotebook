@@ -607,10 +607,13 @@ app.get('/api/public/handbook/:id', (req, res) => {
 
   // Check 2: Handbook is published
   if (!handbook.isPublished) {
-    return res.status(403).json({
-      error: 'unpublished',
-      message: 'Handbook ini belum dipublikasikan oleh pemiliknya.'
-    });
+    const isPreview = req.query.preview === '1' || req.params.id === 'preview';
+    if (!isPreview) {
+      return res.status(403).json({
+        error: 'unpublished',
+        message: 'Handbook ini belum dipublikasikan oleh pemiliknya.'
+      });
+    }
   }
 
   // Check 3: Link is active (not disabled)

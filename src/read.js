@@ -95,7 +95,6 @@ async function initReader() {
   const savedTheme = localStorage.getItem('hfb_theme') || 'dark';
   syncReaderTheme(savedTheme);
 
-  setupFirstTouchAutoplay();
   setupEventListeners();
 
   await loadAndDisplayHandbook(null, directKey);
@@ -140,7 +139,10 @@ function renderBook() {
     readerState.audioElement.volume = initialVol;
     DOM.bgmVolumeSlider.value = initialVol;
 
-    // Autoplay policy: will trigger on first interaction if autoplay enabled
+    // Trigger autoplay if enabled
+    if (hb.autoplay !== false) {
+      startBgmPlayback();
+    }
   } else {
     DOM.readerAudioGroup.style.display = 'none';
   }
@@ -164,6 +166,11 @@ function renderBook() {
 function handlePageChange({ pageIndex, totalPages, isCover, isBackCover }) {
   updatePageIndicator(pageIndex);
   highlightActiveThumbnail(pageIndex);
+
+  // Turn-page is an explicit user gesture - start BGM if waiting for interaction!
+  if (!readerState.audioPlaying && readerState.handbook?.audioUrl && readerState.handbook.autoplay !== false) {
+    startBgmPlayback();
+  }
 
   // Confetti on finishing the book
   if (isBackCover && totalPages > 1) {
@@ -214,6 +221,9 @@ function renderThumbnailsDrawer() {
     thumbItem.addEventListener('click', () => {
       readerState.flipbookManager.goToPage(index);
       DOM.thumbnailDrawer.classList.remove('open');
+      if (!readerState.audioPlaying && readerState.handbook?.audioUrl && readerState.handbook.autoplay !== false) {
+        startBgmPlayback();
+      }
     });
 
     DOM.drawerThumbnailsTrack.appendChild(thumbItem);
@@ -227,28 +237,47 @@ function highlightActiveThumbnail(pageIndex) {
 }
 
 // ============================================================================
-// AUDIO AUTOPLAY ON FIRST TOUCH
+// AUDIO AUTOPLAY & INTERACTION UNLOCK
 // ============================================================================
+function startBgmPlayback() {
+  if (!readerState.handbook?.audioUrl || readerState.audioPlaying) return;
+
+  readerState.audioElement.play().then(() => {
+    readerState.audioPlaying = true;
+    DOM.btnToggleBgm?.classList.add('active');
+  }).catch((err) => {
+    console.log('[Reader BGM] Autoplay deferred until user gesture:', err.message);
+    setupFirstTouchAutoplay();
+  });
+}
+
 function setupFirstTouchAutoplay() {
   const triggerAudioOnFirstInteraction = () => {
-    if (readerState.hasTouchedFirstTime) return;
-    readerState.hasTouchedFirstTime = true;
-
-    if (readerState.handbook?.audioUrl && readerState.handbook.autoplay !== false) {
-      readerState.audioElement.play().then(() => {
-        readerState.audioPlaying = true;
-        DOM.btnToggleBgm.classList.add('active');
-      }).catch(() => {});
+    if (readerState.audioPlaying || !readerState.handbook?.audioUrl) {
+      cleanListeners();
+      return;
     }
 
+    if (readerState.handbook.autoplay !== false) {
+      readerState.audioElement.play().then(() => {
+        readerState.audioPlaying = true;
+        DOM.btnToggleBgm?.classList.add('active');
+        cleanListeners();
+      }).catch(() => {});
+    }
+  };
+
+  const cleanListeners = () => {
     window.removeEventListener('click', triggerAudioOnFirstInteraction);
     window.removeEventListener('keydown', triggerAudioOnFirstInteraction);
     window.removeEventListener('touchstart', triggerAudioOnFirstInteraction);
+    window.removeEventListener('pointerdown', triggerAudioOnFirstInteraction);
   };
 
   window.addEventListener('click', triggerAudioOnFirstInteraction, { passive: true });
   window.addEventListener('keydown', triggerAudioOnFirstInteraction, { passive: true });
   window.addEventListener('touchstart', triggerAudioOnFirstInteraction, { passive: true });
+  window.addEventListener('pointerdown', triggerAudioOnFirstInteraction, { passive: true });
 }
 
 function showError(title, message) {
@@ -262,31 +291,60 @@ function showError(title, message) {
 // ============================================================================
 function setupEventListeners() {
   // Navigation
-  DOM.btnPrevPage.addEventListener('click', () => readerState.flipbookManager?.prev());
-  DOM.btnNextPage.addEventListener('click', () => readerState.flipbookManager?.next());
+  DOM.btnPrevPage.addEventListener('click', () => {
+    readerState.flipbookManager?.prev();
+    if (!readerState.audioPlaying && readerState.handbook?.audioUrl && readerState.handbook.autoplay !== false) {
+      startBgmPlayback();
+    }
+  });
+  DOM.btnNextPage.addEventListener('click', () => {
+    readerState.flipbookManager?.next();
+    if (!readerState.audioPlaying && readerState.handbook?.audioUrl && readerState.handbook.autoplay !== false) {
+      startBgmPlayback();
+    }
+  });
 
   // TOC Drawer
   DOM.btnToggleToc.addEventListener('click', () => DOM.thumbnailDrawer.classList.toggle('open'));
   DOM.btnCloseDrawer.addEventListener('click', () => DOM.thumbnailDrawer.classList.remove('open'));
 
-  // Sound Effect
+  // Sound Effect (Page flip paper)
   DOM.btnToggleSound.addEventListener('click', () => {
     readerState.soundEnabled = !readerState.soundEnabled;
     readerState.flipbookManager?.setSoundEnabled(readerState.soundEnabled);
     DOM.btnToggleSound.classList.toggle('active', readerState.soundEnabled);
   });
 
-  // BGM Toggle & Volume
+  // BGM Audio Element events
+  readerState.audioElement.addEventListener('play', () => {
+    readerState.audioPlaying = true;
+    DOM.btnToggleBgm?.classList.add('active');
+  });
+
+  readerState.audioElement.addEventListener('pause', () => {
+    readerState.audioPlaying = false;
+    DOM.btnToggleBgm?.classList.remove('active');
+  });
+
+  readerState.audioElement.addEventListener('ended', () => {
+    readerState.audioPlaying = false;
+    DOM.btnToggleBgm?.classList.remove('active');
+  });
+
+  readerState.audioElement.addEventListener('error', (e) => {
+    console.error('[Reader BGM] Audio element error:', e);
+    readerState.audioPlaying = false;
+    DOM.btnToggleBgm?.classList.remove('active');
+  });
+
+  // BGM Toggle Button
   DOM.btnToggleBgm.addEventListener('click', () => {
     if (readerState.audioPlaying) {
       readerState.audioElement.pause();
-      readerState.audioPlaying = false;
-      DOM.btnToggleBgm.classList.remove('active');
     } else {
-      readerState.audioElement.play().then(() => {
-        readerState.audioPlaying = true;
-        DOM.btnToggleBgm.classList.add('active');
-      }).catch(() => {});
+      readerState.audioElement.play().catch((err) => {
+        console.warn('[Reader BGM] Manual play error:', err);
+      });
     }
   });
 

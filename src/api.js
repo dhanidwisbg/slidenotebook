@@ -262,8 +262,35 @@ export async function updateAdminHandbook(id, payload) {
   return updated;
 }
 
-export async function uploadAdminAudio(file) {
+import { upload as uploadDirectToBlob } from '@vercel/blob/client';
+
+export async function uploadAdminAudio(file, onProgress = null) {
   const token = getAdminToken();
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const pathname = `audio/${Date.now()}-${safeName}`;
+
+  // 1. Direct client-to-blob upload (supports files up to 30MB bypassing serverless body limits)
+  try {
+    const blob = await uploadDirectToBlob(pathname, file, {
+      access: 'public',
+      handleUploadUrl: `${API_BASE}/admin/blob-upload`,
+      headers: { Authorization: `Bearer ${token}` },
+      onUploadProgress: (progress) => {
+        if (typeof onProgress === 'function' && progress.total > 0) {
+          onProgress(Math.round((progress.loaded / progress.total) * 100));
+        }
+      }
+    });
+
+    if (blob && blob.url) {
+      if (typeof onProgress === 'function') onProgress(100);
+      return { audioUrl: blob.url, fileName: file.name, fileSize: file.size };
+    }
+  } catch (directErr) {
+    console.warn('[uploadAdminAudio] Direct blob upload failed, trying server route fallback:', directErr.message);
+  }
+
+  // 2. Fallback: Server-side upload (for local Express server or standard serverless)
   try {
     const formData = new FormData();
     formData.append('audio', file);
@@ -275,17 +302,17 @@ export async function uploadAdminAudio(file) {
     });
 
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      if (typeof onProgress === 'function') onProgress(100);
+      return { audioUrl: data.audioUrl, fileName: file.name, fileSize: file.size };
+    } else {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Server error: ${res.status}`);
     }
-  } catch (e) {}
-
-  // Fallback for Vercel: read audio as dataUrl
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve({ audioUrl: reader.result, filename: file.name });
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+  } catch (e) {
+    console.error('[uploadAdminAudio] Server upload fallback failed:', e.message);
+    throw new Error(`Gagal mengunggah musik: ${e.message}`);
+  }
 }
 
 /**

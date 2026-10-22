@@ -107,8 +107,99 @@ const DOM = {
   btnCopyDirectLink: document.getElementById('btn-copy-direct-link'),
   directLinkGroup: document.getElementById('direct-link-group'),
 
+  // Upload Loading Card & Success Modal
+  uploadLoadingModal: document.getElementById('upload-loading-modal'),
+  loadingCardTitle: document.getElementById('loading-card-title'),
+  loadingCardDesc: document.getElementById('loading-card-desc'),
+  loadingCardProgress: document.getElementById('loading-card-progress'),
+  loadingCardStep: document.getElementById('loading-card-step'),
+  loadingCardPercent: document.getElementById('loading-card-percent'),
+  loadingCardFilename: document.getElementById('loading-card-filename'),
+  loadingIconCore: document.getElementById('loading-icon-core'),
+
+  uploadSuccessModal: document.getElementById('upload-success-modal'),
+  successCardTitle: document.getElementById('success-card-title'),
+  successCardDesc: document.getElementById('success-card-desc'),
+  successCardDetails: document.getElementById('success-card-details'),
+  successCardDetailText: document.getElementById('success-card-detail-text'),
+  btnCloseSuccessModal: document.getElementById('btn-close-success-modal'),
+
   toast: document.getElementById('admin-toast')
 };
+
+// ============================================================================
+// UPLOAD LOADING CARD & SUCCESS NOTIFICATION HELPERS
+// ============================================================================
+function showLoadingCard({ title, subtitle, filename, percent = 0, step = 'Menyiapkan berkas...', isAudio = false }) {
+  if (!DOM.uploadLoadingModal) return;
+
+  DOM.loadingCardTitle.textContent = title;
+  DOM.loadingCardDesc.textContent = subtitle;
+  DOM.loadingCardFilename.textContent = filename || 'Berkas';
+  DOM.loadingCardProgress.style.width = `${percent}%`;
+  DOM.loadingCardPercent.textContent = `${Math.round(percent)}%`;
+  DOM.loadingCardStep.textContent = step;
+
+  if (DOM.loadingIconCore) {
+    if (isAudio) {
+      DOM.loadingIconCore.innerHTML = `
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18V5l12-2v13"></path>
+          <circle cx="6" cy="18" r="3"></circle>
+          <circle cx="18" cy="16" r="3"></circle>
+        </svg>
+      `;
+    } else {
+      DOM.loadingIconCore.innerHTML = `
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+      `;
+    }
+  }
+
+  DOM.uploadLoadingModal.style.display = 'flex';
+}
+
+function updateLoadingCard({ percent, step, title, subtitle }) {
+  if (percent !== undefined && DOM.loadingCardProgress) {
+    const clamped = Math.min(100, Math.max(0, percent));
+    DOM.loadingCardProgress.style.width = `${clamped}%`;
+    if (DOM.loadingCardPercent) DOM.loadingCardPercent.textContent = `${Math.round(clamped)}%`;
+  }
+  if (step && DOM.loadingCardStep) {
+    DOM.loadingCardStep.textContent = step;
+  }
+  if (title && DOM.loadingCardTitle) {
+    DOM.loadingCardTitle.textContent = title;
+  }
+  if (subtitle && DOM.loadingCardDesc) {
+    DOM.loadingCardDesc.textContent = subtitle;
+  }
+}
+
+function hideLoadingCard() {
+  if (DOM.uploadLoadingModal) {
+    DOM.uploadLoadingModal.style.display = 'none';
+  }
+}
+
+function showSuccessModal({ title, message, detailText }) {
+  hideLoadingCard();
+  if (DOM.uploadSuccessModal) {
+    DOM.successCardTitle.textContent = title || 'Berhasil Diunggah!';
+    DOM.successCardDesc.textContent = message || 'Berkas Anda telah berhasil diproses dan disimpan ke sistem.';
+    if (detailText) {
+      DOM.successCardDetailText.textContent = detailText;
+      DOM.successCardDetails.style.display = 'flex';
+    } else {
+      DOM.successCardDetails.style.display = 'none';
+    }
+    DOM.uploadSuccessModal.style.display = 'flex';
+  }
+}
 
 // ============================================================================
 // INITIALIZATION & AUTH CHECK
@@ -538,95 +629,147 @@ async function handleFilesUpload(files) {
   // Natural numeric sort for images (slide2 before slide10)
   images.sort(naturalSort);
 
-  showToast(`Memproses ${fileList.length} file...`);
+  const primaryFilename = fileList[0]?.name || 'Berkas';
+  const fileSummary = fileList.length === 1 ? primaryFilename : `${primaryFilename} + ${fileList.length - 1} berkas lainnya`;
 
-  const newPages = [];
+  showLoadingCard({
+    title: 'Memproses Slide...',
+    subtitle: `Sedang memproses ${fileList.length} file berkas presentasi dan gambar ke dalam buku flipbook.`,
+    filename: fileSummary,
+    percent: 8,
+    step: 'Menganalisis berkas yang dipilih...',
+    isAudio: false
+  });
 
-  // 1. Process PowerPoint (.pptx / .ppt) via Server Native PowerPoint Conversion
-  for (const pptFile of ppts) {
-    try {
-      showToast(`Mengonversi presentasi PowerPoint: ${pptFile.name}...`);
-      const convertRes = await convertAdminPptx(pptFile);
-      showToast(`Mengekstrak slide dari hasil konversi: ${pptFile.name}...`);
+  try {
+    const newPages = [];
 
-      // Fetch the converted PDF from server
-      const pdfBlob = await fetch(convertRes.pdfUrl).then((r) => r.blob());
-      const extracted = await convertPdfToPages(pdfBlob, (current, total) => {
-        showToast(`Mengekstrak slide ${current} dari ${total}...`);
-      });
-      newPages.push(...extracted);
-      showToast(`Berhasil mengekstrak ${extracted.length} slide dari ${pptFile.name}!`);
-    } catch (err) {
-      console.error(err);
-      alert(`⚠️ ${err.message}\n\n💡 Alternatif Praktis: Buka file presentasi Anda di PowerPoint, lalu pilih "File > Export / Save As > PDF", kemudian tarik file PDF tersebut ke sini!`);
-    }
-  }
+    // 1. Process PowerPoint (.pptx / .ppt) via Server Native PowerPoint Conversion
+    for (let i = 0; i < ppts.length; i++) {
+      const pptFile = ppts[i];
+      try {
+        updateLoadingCard({
+          percent: 15 + Math.round((i / ppts.length) * 25),
+          step: `Mengonversi presentasi PowerPoint: ${pptFile.name}...`
+        });
+        const convertRes = await convertAdminPptx(pptFile);
 
-  // 2. Compress images to max 1600 px
-  for (const imgFile of images) {
-    try {
-      const page = await processImageFile(imgFile, 1600, 0.82);
-      newPages.push(page);
-    } catch (err) {
-      console.error(err);
-      showToast(`Gagal memuat ${imgFile.name}: ${err.message}`);
-    }
-  }
+        updateLoadingCard({
+          step: `Mengekstrak slide dari PowerPoint: ${pptFile.name}...`
+        });
 
-  // 3. Extract PDF documents
-  for (const pdfFile of pdfs) {
-    try {
-      showToast(`Mengekstrak PDF: ${pdfFile.name}...`);
-      const extracted = await convertPdfToPages(pdfFile, (current, total) => {
-        showToast(`Mengekstrak slide ${current} dari ${total} (${pdfFile.name})...`);
-      });
-      newPages.push(...extracted);
-    } catch (err) {
-      console.error(err);
-      showToast(`Gagal membaca PDF: ${err.message}`);
-    }
-  }
-
-  if (newPages.length === 0) return;
-
-  // Auto-detect orientation from first slide if no pages yet
-  if ((adminState.handbook.pages || []).length === 0 && newPages[0]) {
-    adminState.handbook.orientation = newPages[0].orientation;
-    syncHandbookToUI();
-  }
-
-  // ── Upload each new page image to Vercel Blob (one request per image) ──────
-  // This avoids sending huge base64 payloads in a single JSON request which
-  // would exceed Vercel's 4.5MB serverless function body limit.
-  const handbookId = adminState.handbook.id;
-  let blobUploaded = 0;
-
-  for (let i = 0; i < newPages.length; i++) {
-    const page = newPages[i];
-    if (page.dataUrl && page.dataUrl.startsWith('data:image/')) {
-      showToast(`Mengunggah slide ${i + 1} dari ${newPages.length} ke cloud...`);
-      const blobUrl = await uploadPageImageToBlob(handbookId, page.id, page.dataUrl);
-      if (blobUrl) {
-        page.imageUrl = blobUrl;
-        delete page.dataUrl; // remove heavy base64 — only URL stored
-        blobUploaded++;
+        const pdfBlob = await fetch(convertRes.pdfUrl).then((r) => r.blob());
+        const extracted = await convertPdfToPages(pdfBlob, (current, total) => {
+          updateLoadingCard({
+            step: `Mengekstrak slide ${current} dari ${total} (${pptFile.name})...`
+          });
+        });
+        newPages.push(...extracted);
+      } catch (err) {
+        console.error(err);
+        alert(`⚠️ ${err.message}\n\n💡 Alternatif Praktis: Buka file presentasi Anda di PowerPoint, lalu pilih "File > Export / Save As > PDF", kemudian tarik file PDF tersebut ke sini!`);
       }
-      // If upload failed, keep dataUrl so it still shows in UI (server will retry on save)
     }
+
+    // 2. Compress images to max 1600 px
+    for (let i = 0; i < images.length; i++) {
+      const imgFile = images[i];
+      try {
+        const pct = 40 + Math.round((i / Math.max(1, images.length)) * 25);
+        updateLoadingCard({
+          percent: Math.min(68, pct),
+          step: `Mengompresi gambar (${i + 1}/${images.length}): ${imgFile.name}...`
+        });
+        const page = await processImageFile(imgFile, 1600, 0.82);
+        newPages.push(page);
+      } catch (err) {
+        console.error(err);
+        showToast(`Gagal memuat ${imgFile.name}: ${err.message}`);
+      }
+    }
+
+    // 3. Extract PDF documents
+    for (let i = 0; i < pdfs.length; i++) {
+      const pdfFile = pdfs[i];
+      try {
+        updateLoadingCard({
+          percent: 50 + Math.round((i / Math.max(1, pdfs.length)) * 20),
+          step: `Mengekstrak dokumen PDF: ${pdfFile.name}...`
+        });
+        const extracted = await convertPdfToPages(pdfFile, (current, total) => {
+          updateLoadingCard({
+            step: `Mengekstrak slide ${current} dari ${total} (${pdfFile.name})...`
+          });
+        });
+        newPages.push(...extracted);
+      } catch (err) {
+        console.error(err);
+        showToast(`Gagal membaca PDF: ${err.message}`);
+      }
+    }
+
+    if (newPages.length === 0) {
+      hideLoadingCard();
+      return;
+    }
+
+    // Auto-detect orientation from first slide if no pages yet
+    if ((adminState.handbook.pages || []).length === 0 && newPages[0]) {
+      adminState.handbook.orientation = newPages[0].orientation;
+      syncHandbookToUI();
+    }
+
+    // ── Upload each new page image to Vercel Blob (one request per image) ──────
+    const handbookId = adminState.handbook.id;
+    let blobUploaded = 0;
+
+    for (let i = 0; i < newPages.length; i++) {
+      const page = newPages[i];
+      if (page.dataUrl && page.dataUrl.startsWith('data:image/')) {
+        const uploadPct = 70 + Math.round((i / newPages.length) * 22);
+        updateLoadingCard({
+          percent: uploadPct,
+          step: `Mengunggah slide ${i + 1} dari ${newPages.length} ke cloud storage...`
+        });
+        const blobUrl = await uploadPageImageToBlob(handbookId, page.id, page.dataUrl);
+        if (blobUrl) {
+          page.imageUrl = blobUrl;
+          delete page.dataUrl; // remove heavy base64
+          blobUploaded++;
+        }
+      }
+    }
+
+    adminState.handbook.pages = adminState.handbook.pages || [];
+    adminState.handbook.pages.push(...newPages);
+
+    updateLoadingCard({
+      percent: 96,
+      step: `Menyimpan metadata ${newPages.length} slide ke database...`
+    });
+
+    await autoSaveHandbook();
+    renderPagesGrid();
+    checkOrientationAlert();
+
+    updateLoadingCard({
+      percent: 100,
+      step: 'Semua proses selesai!'
+    });
+
+    setTimeout(() => {
+      showSuccessModal({
+        title: 'Slide Berhasil Ditambahkan!',
+        message: `Sebanyak ${newPages.length} slide baru berhasil diproses dan disimpan ke server.`,
+        detailText: `Total halaman saat ini: ${adminState.handbook.pages.length} halaman.`
+      });
+    }, 350);
+
+  } catch (err) {
+    hideLoadingCard();
+    console.error('Files upload error:', err);
+    alert(`Terjadi kesalahan saat memproses file: ${err.message}`);
   }
-
-  if (blobUploaded > 0) {
-    showToast(`${blobUploaded} gambar berhasil diunggah ke cloud CDN.`);
-  }
-
-  adminState.handbook.pages = adminState.handbook.pages || [];
-  adminState.handbook.pages.push(...newPages);
-
-  showToast(`Menyimpan metadata ${newPages.length} slide...`);
-  await autoSaveHandbook();
-  renderPagesGrid();
-  checkOrientationAlert();
-  showToast(`Berhasil menambahkan ${newPages.length} slide baru!`);
 }
 
 // ============================================================================
@@ -787,37 +930,84 @@ function setupEventListeners() {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 12 * 1024 * 1024) {
-      alert('Ukuran file audio melebihi batas 12 MB.');
+    if (file.size > 25 * 1024 * 1024) {
+      alert('Ukuran file audio melebihi batas maksimal 25 MB.');
+      e.target.value = '';
       return;
     }
 
+    const fileSizeMb = (file.size / (1024 * 1024)).toFixed(2);
+    showLoadingCard({
+      title: 'Mengunggah Musik Latar',
+      subtitle: 'Berkas audio sedang diunggah dan dihubungkan ke flipbook...',
+      filename: `${file.name} (${fileSizeMb} MB)`,
+      percent: 15,
+      step: 'Menghubungkan ke cloud storage...',
+      isAudio: true
+    });
+
     try {
-      showToast(`Mengunggah musik: ${file.name}...`);
-      const uploadRes = await uploadAdminAudio(file);
+      const uploadRes = await uploadAdminAudio(file, (pct) => {
+        updateLoadingCard({
+          percent: Math.min(94, Math.max(15, pct)),
+          step: `Mengunggah berkas musik (${pct}%)...`
+        });
+      });
+
+      updateLoadingCard({
+        percent: 96,
+        step: 'Menyimpan konfigurasi musik ke database...'
+      });
+
       adminState.handbook.audioUrl = uploadRes.audioUrl;
+      adminState.testAudioEl.src = uploadRes.audioUrl;
       await autoSaveHandbook();
       syncHandbookToUI();
-      showToast('Musik latar berhasil diunggah ke server.');
+
+      updateLoadingCard({
+        percent: 100,
+        step: 'Musik berhasil dipasang!'
+      });
+
+      setTimeout(() => {
+        showSuccessModal({
+          title: 'Musik Latar Berhasil Ditambahkan!',
+          message: `Berkas audio "${file.name}" berhasil diunggah dan disimpan ke server.`,
+          detailText: 'Musik akan diputar secara otomatis saat pembaca membuka buku atau membalik halaman.'
+        });
+      }, 350);
+
     } catch (err) {
-      alert(err.message);
+      hideLoadingCard();
+      console.error('Audio upload failed:', err);
+      alert(`Gagal mengunggah musik: ${err.message}`);
+    } finally {
+      e.target.value = '';
     }
   });
 
   DOM.btnTestAudioPlay.addEventListener('click', () => {
     if (adminState.testAudioEl.paused) {
       adminState.testAudioEl.volume = parseFloat(DOM.adminAudioVolume.value);
-      adminState.testAudioEl.play();
-      DOM.btnTestAudioPlay.textContent = '⏸';
+      adminState.testAudioEl.play().then(() => {
+        DOM.btnTestAudioPlay.textContent = '⏸';
+      }).catch((err) => {
+        alert('Gagal memutar audio: ' + err.message);
+      });
     } else {
       adminState.testAudioEl.pause();
       DOM.btnTestAudioPlay.textContent = '▶';
     }
   });
 
+  adminState.testAudioEl.addEventListener('ended', () => {
+    DOM.btnTestAudioPlay.textContent = '▶';
+  });
+
   DOM.btnRemoveAudio.addEventListener('click', async () => {
     if (confirm('Hapus musik latar ini?')) {
       adminState.testAudioEl.pause();
+      DOM.btnTestAudioPlay.textContent = '▶';
       adminState.handbook.audioUrl = null;
       await autoSaveHandbook();
       syncHandbookToUI();
@@ -950,6 +1140,20 @@ function setupEventListeners() {
   DOM.btnOpenPreviewTab.addEventListener('click', () => {
     window.open(`/read.html?id=${adminState.handbook.uniqueSlug}&preview=1`, '_blank');
   });
+
+  // Success Modal Dismiss
+  if (DOM.btnCloseSuccessModal) {
+    DOM.btnCloseSuccessModal.addEventListener('click', () => {
+      DOM.uploadSuccessModal.style.display = 'none';
+    });
+  }
+  if (DOM.uploadSuccessModal) {
+    DOM.uploadSuccessModal.addEventListener('click', (e) => {
+      if (e.target === DOM.uploadSuccessModal) {
+        DOM.uploadSuccessModal.style.display = 'none';
+      }
+    });
+  }
 }
 
 let toastTimeout = null;
