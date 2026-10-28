@@ -1,0 +1,236 @@
+/* ==========================================================================
+   BNI BRAND DESIGN SYSTEM - SEMANTIC DESIGN TOKENS
+   Aesthetics: Apple HIG Compliant, Modern Minimalist, Skeuomorphic Signature
+   Colors: BNI Deep Teal (#005E6A) & BNI Radiant Orange (#F15A23)
+   ========================================================================== */
+
+:root {
+  /* ======================================================================== */
+  /* 1. TIPOGRAFI (Outfit + Plus Jakarta Sans)                                */
+  /* ======================================================================== */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-heading-sans: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --text-xs: 0.75rem;     /* 12px - Label terkecil (Badge, kbd, micro-caption) */
+  --text-sm: 0.84rem;     /* 13.5px - Teks sekunder, deskripsi form           */
+  --text-base: 0.95rem;   /* 15.2px - Teks body utama, item list, tombol       */
+  --text-md: 1.05rem;     /* 16.8px - Sub-heading, judul kartu                 */
+  --text-lg: 1.25rem;     /* 20px - Judul modal, judul section kecil           */
+  --text-xl: 1.65rem;     /* 26px - Judul section                              */
+  --text-2xl: 2.25rem;    /* 36px - Judul hero sedang                          */
+
+  /* ======================================================================== */
+  /* 2. PALET BNI LIGHT MODE ("BNI Clean Paper")                              */
+  /* ======================================================================== */
+  --bg-main: #F4F8F8;                  /* Off-white bernuansa teal segar */
+  --bg-surface: #FFFFFF;               /* Navbar, kartu, modal, popover */
+  --bg-surface-elevated: #EBF3F3;      /* Container elevated & tombol sekunder */
+  --bg-surface-hover: #DEECEE;         /* State hover kontrol */
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F0F6F7;
+
+  /* Teks Semantik (Lolos WCAG AA) */
+  --text-main: #0B1F23;                /* Rasio 15.9:1 di bg-main, 17.5:1 di surface */
+  --text-muted: #4A5F64;               /* Rasio 6.3:1 di bg-main, 6.8:1 di surface */
+  --text-faint: #61797E;               /* Rasio 4.6:1 di surface (teks non-esensial) */
+
+  /* Warna Utama & Aksen BNI */
+  --accent-primary: #005E6A;           /* BNI Teal resmi (identitas & struktur) */
+  --accent-primary-hover: #004852;     /* Teal pekat hover */
+  --on-accent-primary: #FFFFFF;        /* Teks putih di atas teal = 7.5:1 */
+  --accent-action: #005E6A;            /* Tombol aksi utama */
+  --accent-action-hover: #004852;
+  --accent-action-text: #FFFFFF;
+
+  --accent-secondary: #F15A23;         /* BNI Orange (aksen & delight) */
+  --accent-secondary-hover: #D94814;
+  --on-accent-secondary: #0B1F23;      /* Teks gelap di atas oranye = 5.0:1 (WCAG AA) */
+  --accent-secondary-text: #B83E0B;    /* Oranye tua khusus teks kecil di putih = 5.6:1 */
+
+  --accent-glow: rgba(0, 94, 106, 0.22);
+  --accent-orange-glow: rgba(241, 90, 35, 0.35);
+
+  /* Border & Pembatas */
+  --border-color: rgba(11, 31, 35, 0.10); /* Garis batas dekoratif */
+  --border-hover: rgba(0, 94, 106, 0.40);
+  --border-strong: #7A8E92;               /* Border kontrol/input (rasio 3.4:1) */
+
+  /* Status Semantik */
+  --success: #0E7F53;
+  --success-bg: #E8F7F0;
+  --warning: #9A5B00;
+  --warning-bg: #FEF6E7;
+  --danger: #C52A2A;
+  --danger-bg: #FDF0F0;
+  --info: #005E6A;
+  --info-bg: #E6F3F5;
+
+  /* Kontrol Kaca (Liquid Glass) */
+  --glass-dock-bg: rgba(255, 255, 255, 0.90);
+  --glass-dock-border: rgba(11, 31, 35, 0.12);
+  --glass-dock-shadow: 0 16px 36px rgba(11, 31, 35, 0.14), 0 2px 6px rgba(11, 31, 35, 0.05);
+  --glass-blur: blur(20px) saturate(1.25);
+  --overlay-scrim: rgba(11, 31, 35, 0.55);
+
+  /* Cincin Fokus HIG */
+  --focus-ring: #005E6A;
+  --focus-ring-shadow: 0 0 0 3px rgba(0, 94, 106, 0.25);
+
+  /* Skeuomorphic Signature Book Tokens */
+  --book-cover-color: #123036;
+  --book-spine-gold: rgba(212, 175, 55, 0.85);
+  --paper-edge-color: #CBD5E1;
+  --book-radius: 14px;
+  --book-shadow: 0 25px 60px rgba(11, 31, 35, 0.18), 0 5px 15px rgba(11, 31, 35, 0.08);
+
+  /* Bayangan Umum */
+  --shadow-sm: 0 2px 4px rgba(11, 31, 35, 0.06);
+  --shadow-md: 0 4px 12px rgba(11, 31, 35, 0.08);
+  --shadow-lg: 0 12px 30px rgba(11, 31, 35, 0.12);
+
+  /* Skala Z-Index Semantik */
+  --z-stage-base: 1;
+  --z-stage-book: 5;
+  --z-reader-header: 30;
+  --z-reader-progress: 35;
+  --z-reader-dock: 40;
+  --z-reader-drawer: 50;
+  --z-modal-backdrop: 80;
+  --z-modal-content: 90;
+  --z-toast-notification: 100;
+}
+
+/* ========================================================================== */
+/* 3. PALET BNI DARK MODE ("BNI Deep Teal")                                   */
+/* ========================================================================== */
+[data-theme='dark'] {
+  --bg-main: #061619;                  /* Hitam kehijauan, turunan teal pekat */
+  --bg-surface: #0C2327;               /* Latar navbar, drawer, modal */
+  --bg-surface-elevated: #123036;      /* Kartu elevated, tombol sekunder */
+  --bg-surface-hover: #194047;         /* State hover kontrol */
+  --bg-card: #123036;
+  --bg-card-hover: #183C44;
+
+  /* Teks Semantik (Lolos WCAG AA) */
+  --text-main: #F1F7F7;                /* Rasio 17.1:1 di bg-main, 12.9:1 di card */
+  --text-muted: #9DB6BA;               /* Rasio 8.7:1 di bg-main, 6.6:1 di card */
+  --text-faint: #7A9DA3;               /* Rasio 4.7:1 di card */
+
+  /* Warna Utama & Aksen BNI Dicerahkan untuk Latar Gelap */
+  --accent-primary: #36C2D1;           /* Teal dicerahkan (rasio 8.6:1 di bg-main) */
+  --accent-primary-hover: #22AAB9;
+  --on-accent-primary: #061619;        /* Teks gelap di atas teal = 8.6:1 */
+  --accent-action: #005E6A;            /* Tombol aksi tetap bawa identitas teal */
+  --accent-action-hover: #007A8A;
+  --accent-action-text: #F1F7F7;
+
+  --accent-secondary: #FF7B47;         /* Oranye dicerahkan (rasio 7.2:1 di bg-main) */
+  --accent-secondary-hover: #E86530;
+  --on-accent-secondary: #061619;      /* Teks gelap di atas oranye = 7.2:1 */
+  --accent-secondary-text: #FFA57E;    /* Oranye cerah untuk teks di kartu gelap (8.1:1) */
+
+  --accent-glow: rgba(54, 194, 209, 0.25);
+  --accent-orange-glow: rgba(255, 123, 71, 0.35);
+
+  /* Border & Pembatas */
+  --border-color: rgba(255, 255, 255, 0.10);
+  --border-hover: rgba(54, 194, 209, 0.40);
+  --border-strong: #4F7077;               /* Border kontrol (rasio 3.05:1 di surface) */
+
+  /* Status Semantik */
+  --success: #34D399;
+  --success-bg: rgba(52, 211, 153, 0.12);
+  --warning: #FBBF24;
+  --warning-bg: rgba(251, 191, 36, 0.14);
+  --danger: #F87171;
+  --danger-bg: rgba(248, 113, 113, 0.14);
+  --info: #36C2D1;
+  --info-bg: rgba(54, 194, 209, 0.14);
+
+  /* Kontrol Kaca (Liquid Glass) */
+  --glass-dock-bg: rgba(12, 35, 39, 0.84);
+  --glass-dock-border: rgba(255, 255, 255, 0.14);
+  --glass-dock-shadow: 0 20px 40px rgba(0, 0, 0, 0.60), 0 2px 6px rgba(0, 0, 0, 0.30);
+  --overlay-scrim: rgba(3, 11, 13, 0.75);
+
+  /* Cincin Fokus HIG */
+  --focus-ring: #36C2D1;
+  --focus-ring-shadow: 0 0 0 3px rgba(54, 194, 209, 0.30);
+
+  /* Skeuomorphic Signature Book Tokens */
+  --book-cover-color: #0C2327;
+  --book-spine-gold: rgba(212, 175, 55, 0.85);
+  --paper-edge-color: #E2E8F0;
+  --book-shadow: 0 28px 70px rgba(0, 0, 0, 0.70), 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  /* Bayangan Umum */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.40);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.50);
+}
+
+/* ========================================================================== */
+/* 4. TOKEN 4 SUASANA BACA (AMBIENCE ENVIRONMENTS)                            */
+/* ========================================================================== */
+:root {
+  --ambient-studio: radial-gradient(circle at center, #0C2327 0%, #041013 100%);
+  --ambient-library: radial-gradient(circle at center, #23160D 0%, #100804 100%);
+  --ambient-warm: radial-gradient(circle at center, #1E1B16 0%, #0D0A08 100%);
+  --ambient-clean: #061619;
+}
+
+[data-ambient='studio'] .reader-viewport {
+  background: var(--ambient-studio) !important;
+}
+[data-ambient='library'] .reader-viewport {
+  background: var(--ambient-library) !important;
+}
+[data-ambient='warm'] .reader-viewport {
+  background: var(--ambient-warm) !important;
+}
+[data-ambient='clean'] .reader-viewport {
+  background: var(--ambient-clean) !important;
+}
+
+/* ========================================================================== */
+/* 5. FOCUS RING & ACCESSIBILITY GLOBALS                                      */
+/* ========================================================================== */
+:focus-visible {
+  outline: 2px solid var(--focus-ring) !important;
+  outline-offset: 2.5px !important;
+  box-shadow: var(--focus-ring-shadow) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .navbar,
+  .reader-dock,
+  .thumbnail-drawer,
+  .modal-box,
+  .toast {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--bg-surface) !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border-color: rgba(11, 31, 35, 0.30);
+    --border-strong: #0B1F23;
+  }
+  [data-theme='dark'] {
+    --border-color: rgba(255, 255, 255, 0.30);
+    --border-strong: #F1F7F7;
+  }
+}

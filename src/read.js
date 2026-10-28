@@ -14,7 +14,11 @@ const readerState = {
   soundEnabled: true,
   audioElement: new Audio(),
   audioPlaying: false,
-  hasTouchedFirstTime: false
+  hasTouchedFirstTime: false,
+  zoomLevel: 1.0,
+  autoPlay: false,
+  autoPlayTimer: null,
+  _toastTimer: null
 };
 
 // DOM references
@@ -22,8 +26,26 @@ const DOM = {
   readerTopBar: document.getElementById('reader-top-bar'),
   readerHbTitle: document.getElementById('reader-hb-title'),
   readerHbSubtitle: document.getElementById('reader-hb-subtitle'),
-  readerAmbientSelect: document.getElementById('reader-ambient-select'),
+  readerOrientBadge: document.getElementById('reader-orient-badge'),
+  btnReaderShare: document.getElementById('btn-reader-share'),
+  btnReaderShortcuts: document.getElementById('btn-reader-shortcuts'),
+  shortcutsModal: document.getElementById('shortcuts-modal'),
+  btnCloseShortcuts: document.getElementById('btn-close-shortcuts'),
+  jumpModal: document.getElementById('jump-modal'),
+  btnCloseJump: document.getElementById('btn-close-jump'),
+  jumpForm: document.getElementById('jump-form'),
+  inputJumpPage: document.getElementById('input-jump-page'),
+  jumpHintText: document.getElementById('jump-hint-text'),
+  readerProgressBar: document.getElementById('reader-progress-bar'),
+  btnToggleAutoPlay: document.getElementById('btn-toggle-autoplay'),
+  iconAutoPlayPlay: document.getElementById('icon-autoplay-play'),
+  iconAutoPlayPause: document.getElementById('icon-autoplay-pause'),
+  btnZoomOut: document.getElementById('btn-zoom-out'),
+  btnZoomIn: document.getElementById('btn-zoom-in'),
+  zoomLevelBadge: document.getElementById('zoom-level-badge'),
+  readerAmbientSelect: null, // removed ambient feature
   btnReaderTheme: document.getElementById('btn-reader-theme'),
+  bookStage: document.getElementById('book-stage'),
   bookBase: document.getElementById('book-base'),
   flipbookContainer: document.getElementById('flipbook-container'),
   btnPrevPage: document.getElementById('btn-prev-page'),
@@ -130,6 +152,11 @@ function renderBook() {
   DOM.readerHbTitle.textContent = hb.title || 'Handbook Digital';
   DOM.readerHbSubtitle.textContent = hb.subtitle || '';
 
+  if (DOM.readerOrientBadge) {
+    DOM.readerOrientBadge.style.display = 'inline-block';
+    DOM.readerOrientBadge.textContent = hb.orientation === 'landscape' ? 'Lanskap 16:9' : 'Buku Tegak';
+  }
+
   // Setup BGM if provided by admin
   if (hb.audioUrl) {
     DOM.readerAudioGroup.style.display = 'flex';
@@ -147,6 +174,12 @@ function renderBook() {
     DOM.readerAudioGroup.style.display = 'none';
   }
 
+  // Reset zoom & progress
+  setZoom(1.0);
+  if (DOM.readerProgressBar) {
+    DOM.readerProgressBar.style.width = '0%';
+  }
+
   // Setup Flipbook Manager
   readerState.flipbookManager = new FlipbookManager(
     DOM.flipbookContainer,
@@ -155,7 +188,10 @@ function renderBook() {
       orientation: hb.orientation || 'portrait',
       coverColor: hb.coverColor || '#1e293b',
       onPageChange: handlePageChange,
-      onInit: () => updatePageIndicator(0)
+      onInit: () => {
+        updatePageIndicator(0);
+        if (DOM.readerProgressBar) DOM.readerProgressBar.style.width = '0%';
+      }
     }
   );
 
@@ -167,14 +203,30 @@ function handlePageChange({ pageIndex, totalPages, isCover, isBackCover }) {
   updatePageIndicator(pageIndex);
   highlightActiveThumbnail(pageIndex);
 
+  // Update Reading Progress Bar
+  if (DOM.readerProgressBar) {
+    const progress = totalPages > 1 ? (pageIndex / (totalPages - 1)) * 100 : 100;
+    const rounded = Math.round(Math.min(100, Math.max(0, progress)));
+    DOM.readerProgressBar.style.width = `${rounded}%`;
+    DOM.readerProgressBar.parentElement?.setAttribute('aria-valuenow', rounded.toString());
+  }
+
+  // If auto-play active, reset timer to give full 5s on new page
+  if (readerState.autoPlay) {
+    startAutoPlay();
+  }
+
   // Turn-page is an explicit user gesture - start BGM if waiting for interaction!
   if (!readerState.audioPlaying && readerState.handbook?.audioUrl && readerState.handbook.autoplay !== false) {
     startBgmPlayback();
   }
 
-  // Confetti on finishing the book
+  // Confetti on finishing the book (cek prefers-reduced-motion)
   if (isBackCover && totalPages > 1) {
-    confetti({ particleCount: 70, spread: 80, origin: { y: 0.6 } });
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!prefersReduced) {
+      confetti({ particleCount: 70, spread: 80, origin: { y: 0.6 } });
+    }
   }
 }
 
@@ -286,6 +338,67 @@ function showError(title, message) {
   DOM.errorScreen.style.display = 'flex';
 }
 
+function showToast(message, duration = 2800) {
+  if (!DOM.toast) return;
+  DOM.toast.textContent = message;
+  DOM.toast.classList.add('show');
+  clearTimeout(readerState._toastTimer);
+  readerState._toastTimer = setTimeout(() => {
+    DOM.toast.classList.remove('show');
+  }, duration);
+}
+
+function setZoom(level) {
+  readerState.zoomLevel = Math.max(0.7, Math.min(1.7, parseFloat(level.toFixed(2))));
+  const percent = Math.round(readerState.zoomLevel * 100);
+  if (DOM.zoomLevelBadge) {
+    DOM.zoomLevelBadge.textContent = `${percent}%`;
+  }
+  if (DOM.bookStage) {
+    DOM.bookStage.style.transform = `scale(${readerState.zoomLevel})`;
+    DOM.bookStage.style.transformOrigin = 'center center';
+    DOM.bookStage.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
+  }
+}
+
+function toggleAutoPlay() {
+  readerState.autoPlay = !readerState.autoPlay;
+  if (readerState.autoPlay) {
+    DOM.btnToggleAutoPlay?.classList.add('active');
+    if (DOM.iconAutoPlayPlay) DOM.iconAutoPlayPlay.style.display = 'none';
+    if (DOM.iconAutoPlayPause) DOM.iconAutoPlayPause.style.display = 'block';
+    showToast('Auto-Play aktif: Halaman berpindah tiap 5 detik ⏱️');
+    startAutoPlay();
+  } else {
+    stopAutoPlay();
+    DOM.btnToggleAutoPlay?.classList.remove('active');
+    if (DOM.iconAutoPlayPlay) DOM.iconAutoPlayPlay.style.display = 'block';
+    if (DOM.iconAutoPlayPause) DOM.iconAutoPlayPause.style.display = 'none';
+    showToast('Auto-Play dinonaktifkan ⏸️');
+  }
+}
+
+function startAutoPlay() {
+  stopAutoPlay();
+  readerState.autoPlayTimer = setInterval(() => {
+    if (!readerState.flipbookManager) return;
+    const current = readerState.flipbookManager.currentPage;
+    const total = readerState.flipbookManager.totalPages;
+    if (current >= total - 1) {
+      readerState.flipbookManager.goToPage(0);
+    } else {
+      readerState.flipbookManager.next();
+    }
+  }, 5000);
+}
+
+function stopAutoPlay() {
+  if (readerState.autoPlayTimer) {
+    clearInterval(readerState.autoPlayTimer);
+    readerState.autoPlayTimer = null;
+  }
+}
+
 // ============================================================================
 // EVENT LISTENERS
 // ============================================================================
@@ -313,6 +426,100 @@ function setupEventListeners() {
     readerState.soundEnabled = !readerState.soundEnabled;
     readerState.flipbookManager?.setSoundEnabled(readerState.soundEnabled);
     DOM.btnToggleSound.classList.toggle('active', readerState.soundEnabled);
+    showToast(readerState.soundEnabled ? 'Suara efek kertas aktif 🔊' : 'Suara efek kertas dimatikan 🔇');
+  });
+
+  // Auto-Play Slide with hover pause
+  DOM.btnToggleAutoPlay?.addEventListener('click', () => {
+    toggleAutoPlay();
+  });
+
+  // Hentikan autoplay sementara saat pengguna mengarahkan mouse ke stage buku
+  DOM.bookStage?.addEventListener('mouseenter', () => {
+    if (readerState.autoPlay) {
+      stopAutoPlay();
+    }
+  });
+
+  DOM.bookStage?.addEventListener('mouseleave', () => {
+    if (readerState.autoPlay) {
+      startAutoPlay();
+    }
+  });
+
+  // Zoom Controls
+  DOM.btnZoomIn?.addEventListener('click', () => {
+    setZoom(readerState.zoomLevel + 0.15);
+  });
+  DOM.btnZoomOut?.addEventListener('click', () => {
+    setZoom(readerState.zoomLevel - 0.15);
+  });
+  DOM.zoomLevelBadge?.addEventListener('click', () => {
+    setZoom(1.0);
+    showToast('Zoom diatur ulang ke 100%');
+  });
+
+  // Focus Trapping and Restoration for Modals
+  let previousActiveElement = null;
+
+  function openModal(modalEl, initialFocusEl) {
+    if (!modalEl) return;
+    previousActiveElement = document.activeElement;
+    modalEl.style.display = 'flex';
+    modalEl.setAttribute('aria-hidden', 'false');
+    const focusTarget = initialFocusEl || modalEl.querySelector('input, button, select');
+    setTimeout(() => focusTarget?.focus(), 50);
+  }
+
+  function closeModal(modalEl) {
+    if (!modalEl) return;
+    modalEl.style.display = 'none';
+    modalEl.setAttribute('aria-hidden', 'true');
+    if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+      previousActiveElement.focus();
+    }
+  }
+
+  // Jump to Page
+  DOM.pageIndicator?.addEventListener('click', () => {
+    const total = (readerState.handbook?.pages || []).length;
+    if (total <= 1) return;
+    if (DOM.jumpHintText) DOM.jumpHintText.textContent = `Tersedia 1 sampai ${total} halaman`;
+    if (DOM.inputJumpPage) {
+      DOM.inputJumpPage.max = total;
+      DOM.inputJumpPage.value = Math.max(1, (readerState.flipbookManager?.currentPage || 0) + 1);
+    }
+    openModal(DOM.jumpModal, DOM.inputJumpPage);
+  });
+
+  DOM.jumpForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const targetPage = parseInt(DOM.inputJumpPage.value, 10);
+    const total = (readerState.handbook?.pages || []).length;
+    if (targetPage >= 1 && targetPage <= total) {
+      readerState.flipbookManager?.goToPage(targetPage - 1);
+      closeModal(DOM.jumpModal);
+      showToast(`Menuju halaman ${targetPage}`);
+    }
+  });
+
+  DOM.btnCloseJump?.addEventListener('click', () => {
+    closeModal(DOM.jumpModal);
+  });
+
+  // Shortcuts Modal
+  DOM.btnReaderShortcuts?.addEventListener('click', () => {
+    openModal(DOM.shortcutsModal, DOM.btnCloseShortcuts);
+  });
+  DOM.btnCloseShortcuts?.addEventListener('click', () => {
+    closeModal(DOM.shortcutsModal);
+  });
+
+  // Close modals on clicking overlay background
+  [DOM.shortcutsModal, DOM.jumpModal].forEach((modal) => {
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal(modal);
+    });
   });
 
   // BGM Audio Element events
@@ -361,10 +568,7 @@ function setupEventListeners() {
     }
   });
 
-  // Ambient Environment
-  DOM.readerAmbientSelect.addEventListener('change', (e) => {
-    document.body.dataset.ambient = e.target.value;
-  });
+  // Ambient Environment - feature removed
 
   // Theme Toggle
   DOM.btnReaderTheme.addEventListener('click', () => {
@@ -391,9 +595,36 @@ function setupEventListeners() {
     }
   });
 
-  // Keyboard Navigation
+  // Keyboard Navigation with Accessibility & Form Guards
   window.addEventListener('keydown', (e) => {
-    if (DOM.passwordModal.style.display === 'flex') return;
+    // 1. Abaikan shortcut jika fokus sedang berada pada form controls (input, textarea, select)
+    const activeEl = document.activeElement;
+    const isEditing = activeEl && (
+      activeEl.tagName === 'INPUT' ||
+      activeEl.tagName === 'TEXTAREA' ||
+      activeEl.tagName === 'SELECT' ||
+      activeEl.isContentEditable
+    );
+
+    // Escape harus selalu bisa menutup modal/drawer kapan saja
+    if (e.key === 'Escape') {
+      DOM.thumbnailDrawer?.classList.remove('open');
+      if (DOM.shortcutsModal) DOM.shortcutsModal.style.display = 'none';
+      if (DOM.jumpModal) DOM.jumpModal.style.display = 'none';
+      return;
+    }
+
+    if (isEditing) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+    if (DOM.passwordModal && DOM.passwordModal.style.display === 'flex') return;
+    if (DOM.jumpModal && DOM.jumpModal.style.display === 'flex') return;
+    if (DOM.shortcutsModal && DOM.shortcutsModal.style.display === 'flex') return;
+
+    // Jangan cegah spasi jika elemen yang fokus adalah tombol interaktif biasa
+    if (e.key === ' ' && activeEl && activeEl.tagName === 'BUTTON') {
+      return;
+    }
 
     if (e.key === 'ArrowRight' || e.key === ' ') {
       e.preventDefault();
@@ -402,11 +633,25 @@ function setupEventListeners() {
       e.preventDefault();
       readerState.flipbookManager?.prev();
     } else if (e.key === 'f' || e.key === 'F') {
-      DOM.btnToggleFullscreen.click();
+      DOM.btnToggleFullscreen?.click();
     } else if (e.key === 'm' || e.key === 'M') {
-      DOM.btnToggleBgm.click();
-    } else if (e.key === 'Escape') {
-      DOM.thumbnailDrawer.classList.remove('open');
+      DOM.btnToggleBgm?.click();
+    } else if (e.key === 's' || e.key === 'S') {
+      DOM.btnToggleSound?.click();
+    } else if (e.key === 'p' || e.key === 'P') {
+      toggleAutoPlay();
+    } else if (e.key === 't' || e.key === 'T') {
+      DOM.thumbnailDrawer?.classList.toggle('open');
+    } else if (e.key === '+' || e.key === '=') {
+      setZoom(readerState.zoomLevel + 0.15);
+    } else if (e.key === '-' || e.key === '_') {
+      setZoom(readerState.zoomLevel - 0.15);
+    } else if (e.key === '0' || e.key === 'z' || e.key === 'Z') {
+      setZoom(1.0);
+    } else if (e.key === '?') {
+      if (DOM.shortcutsModal) {
+        DOM.shortcutsModal.style.display = DOM.shortcutsModal.style.display === 'flex' ? 'none' : 'flex';
+      }
     }
   });
 }

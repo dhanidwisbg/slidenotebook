@@ -150,6 +150,13 @@ export class FlipbookManager {
     this.pageFlip.on('init', () => {
       this.updateBookBasePosition();
       this._applyScaleToFillViewport(dims);
+      this._setupCoverCentering(dims);
+      // Animasi masuk: buku muncul dengan scale-up + fade saat pertama load
+      const stage = this.baseElement?.parentElement;
+      if (stage) {
+        stage.classList.add('animate-enter');
+        setTimeout(() => stage.classList.remove('animate-enter'), 1000);
+      }
       if (this.onInit) {
         this.onInit({
           totalPages: this.totalPages
@@ -191,6 +198,32 @@ export class FlipbookManager {
         }
       }
     }
+  }
+
+  /**
+   * Animasi masuk buku: sampul muncul di tengah (scale-up + fade),
+   * lalu saat halaman pertama dibuka, buku bergeser kanan agar
+   * spread 2 halaman tepat di tengah viewport.
+   */
+  _setupCoverCentering(dims) {
+    const stage = this.baseElement?.parentElement;
+    if (!stage) return;
+
+    // CSS var: geser 1/4 lebar canvas (TERMASUK scale) agar halaman kiri/kanan pas di tengah viewport
+    const canvas = this.container.querySelector('.st-flipbook-root');
+    const canvasW = canvas ? canvas.getBoundingClientRect().width : dims.pageWidth * 2;
+    stage.style.setProperty('--page-shift', `${Math.round(canvasW / 4)}px`);
+
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) return; // HP: single page selalu center, skip animasi geser
+
+    const updateCentering = () => {
+      stage.classList.toggle('cover-centered', this.currentPage === 0);
+      stage.classList.toggle('back-centered', this.currentPage >= this.totalPages - 1);
+    };
+
+    this.pageFlip.on('flip', updateCentering);
+    updateCentering();
   }
 
   /**
@@ -263,12 +296,12 @@ export class FlipbookManager {
 
   handleContainerResize() {
     if (!this.pageFlip || !this.pages.length) return;
-    // Debounce resize to avoid thrashing
+    // Debounce resize to avoid thrashing, preserving currentPage and zoom
     clearTimeout(this._resizeTimer);
     this._resizeTimer = setTimeout(() => {
-      const currentPage = this.currentPage;
-      this.loadBook(this.pages, this.orientation, currentPage);
-    }, 250);
+      const savedPage = this.currentPage;
+      this.loadBook(this.pages, this.orientation, savedPage);
+    }, 200);
   }
 
   /**
@@ -289,7 +322,10 @@ export class FlipbookManager {
 
       // Base width and height tracking PageFlip canvas
       const padding = 16;
-      let baseWidth = bounds.width + padding * 2;
+      const dims = this.calculateBookDimensions();
+      // Cover tampil: base menyusut jadi 1 halaman (buku tertutup), expand saat dibuka
+      const isSingleCover = !isMobile && (isCover || isBackCover);
+      let baseWidth = (isSingleCover ? dims.pageWidth : bounds.width) + padding * 2;
       let baseHeight = bounds.height + padding * 2;
 
       // Both Portrait and Landscape now expand to 2-page spread inside!

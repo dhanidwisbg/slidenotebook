@@ -4,7 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Portal — Handbook Flipbook</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23005E6A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/tokens.css" />
     <link rel="stylesheet" href="/src/style.css" />
     <link rel="stylesheet" href="/src/admin.css" />
     <!-- Instant Theme Loader -->
@@ -16,13 +20,19 @@
     </script>
   </head>
   <body>
+    <!-- Untitled Blend (1) Retro Fluid Animated Background -->
+    <div class="blend-bg-container" aria-hidden="true">
+      <canvas id="blend-bg-canvas" class="blend-bg-canvas"></canvas>
+      <div class="blend-bg-grain"></div>
+    </div>
+
     <div id="admin-app">
       <!-- ================================================================ -->
       <!-- 1. LOGIN SCREEN (Strictly shown if not authenticated)            -->
       <!-- ================================================================ -->
       <section id="login-screen" class="login-container" style="display: none; position: relative;">
         <!-- Theme toggle button on login screen -->
-        <button class="btn-icon" id="btn-login-theme" title="Ganti Mode Terang / Gelap" style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10;">
+        <button class="btn-icon" id="btn-login-theme" title="Ganti Mode Terang / Gelap" style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10;" aria-label="Ganti Mode Terang / Gelap">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"></circle>
             <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -50,7 +60,15 @@
           <form id="login-form" class="login-form">
             <div class="input-group">
               <label class="input-label" for="login-passcode">Kode Akses Admin</label>
-              <input type="password" id="login-passcode" class="input-text" placeholder="Masukkan 8 digit kode..." value="12345678" maxlength="16" autofocus required />
+              <div style="position: relative; display: flex; align-items: center;">
+                <input type="password" id="login-passcode" class="input-text" placeholder="Masukkan 8 digit kode..." value="12345678" maxlength="16" autofocus required style="padding-right: 2.75rem;" />
+                <button type="button" id="btn-toggle-login-pwd" title="Lihat / Sembunyikan Kode" style="position: absolute; right: 0.75rem; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem; display: flex; align-items: center; justify-content: center;" aria-label="Lihat / Sembunyikan Kode">
+                  <svg id="icon-login-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div id="login-error" class="login-error-msg" style="display: none;"></div>
@@ -86,14 +104,23 @@
             </div>
             <div class="brand-title">
               <span>Handbook Flipbook</span>
-              <span class="brand-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-success); border-color: rgba(16, 185, 129, 0.3);">ADMIN</span>
+              <span class="brand-badge" style="background: var(--success-bg); color: var(--success); border-color: var(--success);">ADMIN</span>
             </div>
           </div>
 
           <div class="admin-nav-right">
+            <a href="/" target="_blank" class="btn-pill" title="Buka Halaman Katalog Publik di Tab Baru" style="text-decoration: none;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+              <span>Katalog Publik</span>
+            </a>
+
             <span class="admin-user-tag" id="admin-user-email">admin@flipbook.id</span>
 
-            <button class="btn-pill" id="btn-preview-reader" title="Pratinjau tampilan pembaca persis seperti aslinya">
+            <button class="btn-pill" id="btn-preview-reader" title="Pratinjau tampilan pembaca persis seperti aslinya" aria-label="Pratinjau tampilan pembaca persis seperti aslinya">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
@@ -101,7 +128,7 @@
               <span>Pratinjau</span>
             </button>
 
-            <button class="btn-pill btn-publish-highlight" id="btn-open-publish-modal" title="Publikasikan ke server dan dapatkan link baca">
+            <button class="btn-pill btn-publish-highlight" id="btn-open-publish-modal" title="Publikasikan ke server dan dapatkan link baca" aria-label="Publikasikan ke server dan dapatkan link baca">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="2" y1="12" x2="22" y2="12"></line>
@@ -110,7 +137,7 @@
               <span>Publikasikan</span>
             </button>
 
-            <button class="btn-icon" id="btn-admin-theme" title="Ganti Mode Terang / Gelap">
+            <button class="btn-icon" id="btn-admin-theme" title="Ganti Mode Terang / Gelap" aria-label="Ganti Mode Terang / Gelap">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="5"></circle>
                 <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -124,7 +151,7 @@
               </svg>
             </button>
 
-            <button class="btn-icon" id="btn-logout" title="Keluar / Logout">
+            <button class="btn-icon" id="btn-logout" title="Keluar / Logout" aria-label="Keluar / Logout">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
@@ -181,13 +208,13 @@
               <div class="setting-item">
                 <span class="input-label">Orientasi Buku:</span>
                 <div class="toggle-group" id="orient-toggle">
-                  <button type="button" class="toggle-btn active" id="btn-orient-port" data-orient="portrait">
+                  <button type="button" class="toggle-btn active" id="btn-orient-port" data-orient="portrait" aria-label="Orientasi Portrait (A-Series)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
                     </svg>
                     <span>Portrait (A-Series)</span>
                   </button>
-                  <button type="button" class="toggle-btn" id="btn-orient-land" data-orient="landscape">
+                  <button type="button" class="toggle-btn" id="btn-orient-land" data-orient="landscape" aria-label="Orientasi Landscape (16:9)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
                     </svg>
@@ -200,18 +227,18 @@
               <div class="setting-item">
                 <span class="input-label">Warna Sampul Buku:</span>
                 <div class="color-swatches" id="admin-color-swatches">
-                  <div class="color-dot active" style="background-color: #1e293b;" data-color="#1e293b" title="Obsidian Slate"></div>
-                  <div class="color-dot" style="background-color: #0f2b48;" data-color="#0f2b48" title="Royal Navy"></div>
-                  <div class="color-dot" style="background-color: #0d3829;" data-color="#0d3829" title="Emerald Forest"></div>
-                  <div class="color-dot" style="background-color: #4a1c1d;" data-color="#4a1c1d" title="Velvet Wine"></div>
+                  <div class="color-dot active" style="background-color: #0C2327;" data-color="#0C2327" title="BNI Deep Teal"></div>
+                  <div class="color-dot" style="background-color: #005E6A;" data-color="#005E6A" title="BNI Classic Teal"></div>
+                  <div class="color-dot" style="background-color: #123036;" data-color="#123036" title="BNI Slate Dark"></div>
+                  <div class="color-dot" style="background-color: #F15A23;" data-color="#F15A23" title="BNI Radiant Orange"></div>
                   <div class="color-dot" style="background-color: #3b2818;" data-color="#3b2818" title="Classic Leather"></div>
-                  <input type="color" id="admin-custom-color" class="color-picker-native" value="#1e293b" title="Pilih Warna Kustom" />
+                  <input type="color" id="admin-custom-color" class="color-picker-native" value="#0C2327" title="Pilih Warna Kustom" />
                 </div>
               </div>
 
               <!-- Server Shared Storage Status -->
               <div class="setting-item">
-                <span class="feature-badge" id="admin-storage-badge" style="color: var(--accent-success); border-color: rgba(16, 185, 129, 0.3);">
+                <span class="feature-badge" id="admin-storage-badge" style="color: var(--success); border-color: var(--success);">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
@@ -236,7 +263,7 @@
 
               <div class="audio-card-body">
                 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem;">
-                  <button type="button" class="btn-pill" id="btn-trigger-audio-upload">
+                  <button type="button" class="btn-pill" id="btn-trigger-audio-upload" aria-label="Pilih File Audio">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                       <polyline points="17 8 12 3 7 8"></polyline>
@@ -244,10 +271,10 @@
                     </svg>
                     <span>Pilih File Audio (Maks 12 MB)</span>
                   </button>
-                  <button type="button" class="btn-icon" id="btn-test-audio-play" title="Uji Putar Musik" style="display: none;">
+                  <button type="button" class="btn-icon" id="btn-test-audio-play" title="Uji Putar Musik" style="display: none;" aria-label="Uji Putar Musik">
                     ▶
                   </button>
-                  <button type="button" class="btn-icon" id="btn-remove-audio" title="Hapus Musik" style="display: none; color: var(--accent-danger);">
+                  <button type="button" class="btn-icon" id="btn-remove-audio" title="Hapus Musik" style="display: none; color: var(--accent-danger);" aria-label="Hapus Musik">
                     ✕
                   </button>
                   <input type="file" id="admin-audio-input" accept="audio/*,.mp3,.wav,.ogg,.m4a" style="display: none;" />
@@ -284,7 +311,7 @@
               Pilih file presentasi PowerPoint (.pptx / .ppt), file PDF, atau kumpulan gambar slide JPEG/PNG. Sistem akan otomatis memproses dan menyusun setiap slide menjadi buku digital.
             </p>
             <div class="dropzone-badges">
-              <span class="feature-badge" style="color: #f97316; border-color: rgba(249, 115, 22, 0.4);">✨ Auto-Konversi File PowerPoint (.pptx / .ppt)</span>
+              <span class="feature-badge" style="color: var(--accent-secondary); border-color: var(--accent-secondary);">✨ Auto-Konversi File PowerPoint (.pptx / .ppt)</span>
               <span class="feature-badge">✓ Dokumen PDF Langsung Diekstrak</span>
               <span class="feature-badge">✓ Kompresi Otomatis Maks 1800 px</span>
               <span class="feature-badge">✓ Urutan Numerik Cerdas</span>
@@ -314,7 +341,7 @@
                 <span class="brand-badge" id="admin-page-count">0 Halaman</span>
               </h3>
               <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button class="btn-pill" id="btn-clear-all-pages" style="color: var(--accent-danger); border-color: rgba(239, 68, 68, 0.35);" title="Hapus semua slide contoh / kosongkan buku">
+                <button class="btn-pill" id="btn-clear-all-pages" style="color: var(--accent-danger); border-color: rgba(239, 68, 68, 0.35);" title="Hapus semua slide contoh / kosongkan buku" aria-label="Hapus semua slide contoh / kosongkan buku">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -347,7 +374,7 @@
       <!-- ================================================================ -->
       <!-- 3. PUBLISH & SHARING MODAL                                       -->
       <!-- ================================================================ -->
-      <div class="modal-overlay" id="publish-modal" style="display: none;">
+      <div class="modal-overlay" id="publish-modal" role="dialog" aria-modal="true" aria-label="Publikasikan Handbook" style="display: none;">
         <div class="modal-box">
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem;">
@@ -358,7 +385,7 @@
               </svg>
               <span>Publikasikan Handbook</span>
             </h3>
-            <button class="btn-icon" id="btn-close-publish-modal" style="width: 28px; height: 28px;">✕</button>
+            <button class="btn-icon" id="btn-close-publish-modal" style="width: 28px; height: 28px;" aria-label="Tutup Dialog">✕</button>
           </div>
 
           <p style="font-size: 0.86rem; color: var(--text-muted);">
@@ -390,15 +417,15 @@
           <!-- Direct Access Link (Bypasses PIN) -->
           <div class="input-group" id="direct-link-group">
             <label class="input-label" style="display: flex; align-items: center; gap: 0.4rem;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--success);">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
               </svg>
-              <span style="color: #10b981;">Link Direct (Bypass PIN — bagikan ke pengguna terpercaya)</span>
+              <span style="color: var(--success);">Link Direct (Bypass PIN — bagikan ke pengguna terpercaya)</span>
             </label>
             <div style="display: flex; gap: 0.5rem;">
               <input type="text" id="direct-link-input" class="input-text" readonly style="font-family: monospace; font-size: 0.82rem;" />
-              <button type="button" class="btn-pill" id="btn-copy-direct-link" style="white-space: nowrap; color: #10b981; border-color: rgba(16,185,129,0.35);">
+              <button type="button" class="btn-pill" id="btn-copy-direct-link" style="white-space: nowrap; color: var(--success); border-color: var(--success);">
                 <span>Salin</span>
               </button>
             </div>
@@ -431,7 +458,7 @@
       <!-- ================================================================ -->
       <!-- 4. PREVIEW MODAL                                                 -->
       <!-- ================================================================ -->
-      <div class="modal-overlay preview-overlay" id="preview-modal" style="display: none; padding: 0;">
+      <div class="modal-overlay preview-overlay" id="preview-modal" role="dialog" aria-modal="true" aria-label="Pratinjau Pembaca" style="display: none; padding: 0;">
         <div class="preview-frame-container">
           <div class="preview-frame-header">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -440,7 +467,7 @@
             </div>
             <div style="display: flex; gap: 0.5rem;">
               <button class="btn-pill" id="btn-open-preview-tab">Buka di Tab Baru</button>
-              <button class="btn-icon" id="btn-close-preview-modal" style="width: 32px; height: 32px;">✕</button>
+              <button class="btn-icon" id="btn-close-preview-modal" style="width: 32px; height: 32px;" aria-label="Tutup Dialog">✕</button>
             </div>
           </div>
           <iframe id="preview-iframe" class="preview-iframe" src="about:blank" allow="autoplay"></iframe>
@@ -450,7 +477,7 @@
       <!-- ================================================================ -->
       <!-- 5. UPLOAD LOADING CARD (SLIDES & MUSIC)                          -->
       <!-- ================================================================ -->
-      <div class="modal-overlay upload-loading-overlay" id="upload-loading-modal" style="display: none;">
+      <div class="modal-overlay upload-loading-overlay" id="upload-loading-modal" role="dialog" aria-modal="true" aria-label="Sedang Mengunggah" style="display: none;">
         <div class="upload-loading-card">
           <div class="loading-card-icon-wrapper">
             <div class="pulse-ring"></div>
@@ -490,7 +517,7 @@
       <!-- ================================================================ -->
       <!-- 6. UPLOAD SUCCESS NOTIFICATION MODAL                             -->
       <!-- ================================================================ -->
-      <div class="modal-overlay upload-success-overlay" id="upload-success-modal" style="display: none;">
+      <div class="modal-overlay upload-success-overlay" id="upload-success-modal" role="dialog" aria-modal="true" aria-label="Berhasil Disimpan" style="display: none;">
         <div class="upload-success-card">
           <div class="success-icon-burst">
             <div class="success-glow"></div>
@@ -512,7 +539,7 @@
           </div>
 
           <div class="success-card-actions">
-            <button type="button" class="btn-primary" id="btn-close-success-modal" style="width: 100%;">
+            <button type="button" class="btn-primary" id="btn-close-success-modal" style="width: 100%;" aria-label="Tutup Dialog">
               Selesai & Lanjutkan
             </button>
           </div>
@@ -520,7 +547,7 @@
       </div>
 
       <!-- Toast Notification -->
-      <div class="toast" id="admin-toast"></div>
+      <div class="toast" id="admin-toast" role="status" aria-live="polite"></div>
     </div>
 
     <script type="module" src="/src/admin.js"></script>

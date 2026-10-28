@@ -21,6 +21,12 @@ import {
 } from './compressor.js';
 import { convertPdfToPages } from './pdf-loader.js';
 import { generateSamplePages } from './sample-data.js';
+import { initBlendBackground } from './blend-retro.js';
+
+// Initialize animated Untitled Blend (1) background
+if (typeof document !== 'undefined') {
+  initBlendBackground('blend-bg-canvas');
+}
 
 // Admin State
 const adminState = {
@@ -327,31 +333,41 @@ function renderHandbookList() {
     item.innerHTML = `
       ${lockIcon}
       <span class="admin-hb-item-name" title="${hb.title}">${hb.title || 'Untitled'}</span>
-      <button class="admin-hb-item-delete" title="Hapus Handbook" data-id="${hb.id}">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="3 6 5 6 21 6"></polyline>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-        </svg>
-      </button>
+      <div class="admin-hb-item-actions">
+        <a href="/read.html?id=${hb.uniqueSlug || hb.id}" target="_blank" class="admin-hb-item-btn admin-hb-item-view" title="Buka Pembaca di Tab Baru">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+        </a>
+        <button class="admin-hb-item-btn admin-hb-item-delete" title="Hapus Handbook" aria-label="Hapus Handbook" data-id="${hb.id}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </div>
     `;
 
-    // Click the item body area (not delete btn) to select
+    // Click the item body area (not actions) to select
     item.addEventListener('click', async (e) => {
-      if (e.target.closest('.admin-hb-item-delete')) return;
+      if (e.target.closest('.admin-hb-item-actions')) return;
       await selectHandbook(hb.id);
     });
 
-    // Delete button
+    // Delete button: langsung hapus + toast "Batalkan" 6 detik sebelum dianggap final
     item.querySelector('.admin-hb-item-delete').addEventListener('click', async (e) => {
       e.stopPropagation();
-      if (!confirm(`Hapus handbook "${hb.title}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+      let snapshot = null;
       try {
+        // Simpan snapshot untuk undo (pages ber-imageUrl lolos tanpa re-upload)
+        snapshot = await fetchAdminHandbook(hb.id);
         await deleteAdminHandbook(hb.id);
         adminState.handbooks = adminState.handbooks.filter(h => h.id !== hb.id);
         if (adminState.handbook?.id === hb.id) {
           adminState.handbook = null;
         }
-        showToast(`Handbook "${hb.title}" berhasil dihapus.`);
 
         if (adminState.handbooks.length === 0) {
           await loadHandbookList(); // creates a default
@@ -361,6 +377,29 @@ function renderHandbookList() {
             await selectHandbook(adminState.handbooks[0].id);
           }
         }
+
+        showUndoToast(
+          `Handbook "${hb.title || 'Untitled'}" dihapus.`,
+          async () => {
+            try {
+              const restored = await createAdminHandbook({
+                title: snapshot.title,
+                subtitle: snapshot.subtitle,
+                orientation: snapshot.orientation,
+                coverColor: snapshot.coverColor,
+                pages: snapshot.pages || [],
+                audioUrl: snapshot.audioUrl,
+                autoplay: snapshot.autoplay,
+                initialVolume: snapshot.initialVolume,
+                readerPassword: snapshot.readerPassword || null
+              });
+              await loadHandbookList();
+              if (restored?.id) await selectHandbook(restored.id);
+            } catch (err) {
+              showToast(`Gagal memulihkan: ${err.message}`);
+            }
+          }
+        );
       } catch (err) {
         showToast(`Gagal menghapus: ${err.message}`);
       }
@@ -853,6 +892,26 @@ function setupEventListeners() {
     }
   });
 
+  // Toggle Login Passcode Visibility
+  const btnToggleLoginPwd = document.getElementById('btn-toggle-login-pwd');
+  if (btnToggleLoginPwd && DOM.loginPasscode) {
+    btnToggleLoginPwd.addEventListener('click', () => {
+      const isPwd = DOM.loginPasscode.type === 'password';
+      DOM.loginPasscode.type = isPwd ? 'text' : 'password';
+      btnToggleLoginPwd.innerHTML = isPwd ? `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+        </svg>
+      ` : `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      `;
+    });
+  }
+
   // Theme Toggles
   if (DOM.btnLoginTheme) DOM.btnLoginTheme.addEventListener('click', toggleAdminTheme);
   if (DOM.btnAdminTheme) DOM.btnAdminTheme.addEventListener('click', toggleAdminTheme);
@@ -1162,6 +1221,26 @@ function showToast(msg) {
   DOM.toast.classList.add('show');
   clearTimeout(toastTimeout);
   toastTimeout = setTimeout(() => DOM.toast.classList.remove('show'), 3000);
+}
+
+// Toast dengan aksi Batalkan (undo) untuk penghapusan handbook
+function showUndoToast(msg, onUndo) {
+  DOM.toast.innerHTML = '';
+  const span = document.createElement('span');
+  span.textContent = msg;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = 'Batalkan';
+  btn.style.cssText = 'background:none;border:none;color:var(--accent-primary);font-weight:700;cursor:pointer;font-size:0.85rem;padding:0.15rem 0.4rem;text-decoration:underline;';
+  btn.addEventListener('click', () => {
+    clearTimeout(toastTimeout);
+    DOM.toast.classList.remove('show');
+    onUndo();
+  });
+  DOM.toast.append(span, btn);
+  DOM.toast.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => DOM.toast.classList.remove('show'), 6000);
 }
 
 // Start Admin

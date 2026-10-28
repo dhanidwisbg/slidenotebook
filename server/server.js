@@ -525,7 +525,9 @@ app.delete('/api/admin/handbooks/:id', requireAdminAuth, async (req, res) => {
   }
 
   // Cleanup Vercel Blob files if any
-  if (BLOB_TOKEN && found.pages) {
+  // CATATAN: blob TIDAK dihapus di sini agar fitur Undo (restore via createAdminHandbook)
+  // tetap bisa memakai imageUrl yang sama. Blob yatim dibersihkan manual/berkala.
+  if (false && BLOB_TOKEN && found.pages) {
     const blobUrls = found.pages
       .map((p) => p.imageUrl)
       .filter((u) => u && u.includes('blob.vercel-storage.com'));
@@ -581,6 +583,7 @@ app.get('/api/public/handbooks', (req, res) => {
       orientation: h.orientation,
       coverColor: h.coverColor,
       pageCount: h.pages ? h.pages.length : 0,
+      coverImage: (h.pages && h.pages.length > 0) ? (h.pages[0].imageUrl || h.pages[0].dataUrl || null) : null,
       hasPassword: !!(h.readerPassword && h.readerPassword.trim() !== ''),
       updatedAt: h.updatedAt || h.createdAt
     }));

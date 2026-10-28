@@ -10,27 +10,69 @@
   position: relative;
 }
 
+/* Top Bar - Clean Solid Gradient Layer without Glass Stacking */
 .reader-top-bar {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 40;
+  z-index: var(--z-reader-header);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(to bottom, rgba(11, 15, 25, 0.75) 0%, rgba(11, 15, 25, 0) 100%);
+  padding: 0.65rem 1.25rem;
+  background: linear-gradient(to bottom, rgba(11, 15, 25, 0.95) 0%, rgba(11, 15, 25, 0.4) 70%, transparent 100%);
   pointer-events: none;
+  gap: 1rem;
 }
 
 .reader-top-bar > * {
   pointer-events: auto;
 }
 
+.reader-top-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.reader-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: 9999px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  white-space: nowrap;
+  min-height: 38px;
+}
+
+.reader-back-btn:hover {
+  background: var(--accent-action);
+  color: var(--accent-action-text);
+  border-color: var(--accent-action);
+  transform: translateX(-3px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
 .reader-book-identity {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+.reader-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
 }
 
 .reader-title {
@@ -38,35 +80,230 @@
   font-weight: 700;
   color: var(--text-main);
   letter-spacing: -0.01em;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.reader-orient-badge {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background: var(--info-bg);
+  color: var(--accent-primary);
+  border: 1px solid var(--border-hover);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .reader-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .reader-top-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .reader-glass-select {
-  background: rgba(17, 24, 39, 0.65) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  font-size: 0.8rem;
+  background: var(--bg-surface-elevated) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.85rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  min-height: 38px;
+}
+
+/* Reading Progress Bar */
+.reader-progress-track {
+  position: absolute;
+  top: 54px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--border-color);
+  z-index: var(--z-reader-progress);
+  pointer-events: none;
+}
+
+.reader-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent-primary);
+  box-shadow: 0 0 10px var(--accent-glow);
+  transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Dock Elements & Polish */
+.dock-page-badge.clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.dock-page-badge.clickable:hover {
+  background: var(--info-bg);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+.dock-zoom-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dock-btn-sm {
+  width: 32px !important;
+  height: 32px !important;
+  position: relative;
+}
+
+/* Touch hit-slop target expansion to >= 44x44px */
+.dock-btn-sm::after,
+.admin-hb-item-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+.dock-zoom-val {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 0 0.35rem;
+  cursor: pointer;
+  min-width: 42px;
+  text-align: center;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.dock-zoom-val:hover {
+  color: var(--accent-primary);
+}
+
+/* Animated Equalizer Sound Wave for BGM */
+.audio-waves {
+  display: none;
+  align-items: flex-end;
+  gap: 2.5px;
+  height: 14px;
+}
+
+.dock-btn.active .audio-waves {
+  display: inline-flex;
+}
+
+.dock-btn.active #audio-note-icon {
+  display: none;
+}
+
+.audio-waves span {
+  display: block;
+  width: 2.5px;
+  background: #ffffff;
+  border-radius: 2px;
+  animation: waveBounce 0.7s ease-in-out infinite alternate;
+}
+
+.audio-waves span:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+.audio-waves span:nth-child(2) { height: 14px; animation-delay: 0.3s; }
+.audio-waves span:nth-child(3) { height: 9px; animation-delay: 0.2s; }
+
+@keyframes waveBounce {
+  0% { height: 4px; }
+  100% { height: 14px; }
+}
+
+/* Shortcuts & Jump Modals */
+.shortcuts-modal-box {
+  max-width: 440px;
+  width: 92%;
+  padding: 1.5rem 1.75rem;
+  border-radius: 20px;
+}
+
+.jump-modal-box {
+  max-width: 340px;
+  width: 90%;
+  padding: 1.5rem;
+  border-radius: 20px;
+}
+
+.modal-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.shortcuts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  gap: 1rem;
+}
+
+.shortcut-desc {
+  color: var(--text-muted);
+}
+
+.shortcut-keys {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.shortcut-keys kbd {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-main);
 }
 
 /* Friendly Error Screen */
 .error-screen {
   position: fixed;
   inset: 0;
-  z-index: 100;
-  background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
+  z-index: var(--z-modal-backdrop);
+  background: radial-gradient(circle at center, var(--bg-surface) 0%, var(--bg-main) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,7 +318,7 @@
   max-width: 460px;
   padding: 2.5rem 2rem;
   text-align: center;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -92,9 +329,9 @@
   width: 68px;
   height: 68px;
   border-radius: 20px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: var(--accent-danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  color: var(--danger);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -108,32 +345,128 @@
 }
 
 /* Reader Light Mode Overrides */
+[data-theme='light'] .reader-viewport {
+  background: radial-gradient(circle at center, #FFFFFF 0%, #E8F1F2 100%);
+}
+
 [data-theme='light'] .reader-top-bar {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(to bottom, rgba(244, 248, 248, 0.95) 0%, transparent 100%);
 }
 
 [data-theme='light'] .reader-title {
-  color: #0f172a;
+  color: var(--text-main);
   text-shadow: none;
 }
 
 [data-theme='light'] .reader-subtitle {
-  color: #64748b;
+  color: var(--text-muted);
   text-shadow: none;
 }
 
+[data-theme='light'] .reader-back-btn {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme='light'] .reader-back-btn:hover {
+  background: var(--accent-action);
+  color: #ffffff;
+}
+
 [data-theme='light'] .reader-glass-select {
-  background: rgba(255, 255, 255, 0.9) !important;
-  color: #0f172a !important;
-  border-color: rgba(0, 0, 0, 0.15) !important;
+  background: var(--bg-surface) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
 }
 
 [data-theme='light'] .error-screen {
-  background: radial-gradient(circle at center, #ffffff 0%, #e2e8f0 100%);
+  background: radial-gradient(circle at center, #ffffff 0%, #E2E8F0 100%);
 }
 
 [data-theme='light'] .error-card {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.1);
+  background: var(--bg-surface);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Dark mode: top bar buttons need elevated solid bg for contrast */
+[data-theme='dark'] .btn-icon {
+  background: var(--glass-dock-bg);
+  color: var(--text-main);
+}
+
+/* ==========================================================================
+   BOOK ENTRANCE ANIMATION
+   Sampul muncul di tengah (centered), lalu bergeser kanan saat buka
+   agar spread 2 halaman pas di tengah viewport.
+   ========================================================================== */
+.book-stage .flipbook-container {
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.book-stage.cover-centered .flipbook-container {
+  /* Sampul depan: page-flip merendernya di halaman KANAN canvas → geser KIRI 1/4 canvas agar center.
+     book-base tidak ikut: width-nya sudah 1 halaman & flex-center otomatis pas di tengah. */
+  transform: translateX(calc(-1 * var(--page-shift, 0px)));
+}
+
+/* Sampul belakang: dirender di halaman KIRI canvas → geser KANAN 1/4 canvas agar center */
+.book-stage.back-centered .flipbook-container {
+  transform: translateX(var(--page-shift, 0px));
+}
+
+@keyframes bookEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(36px) scale(0.88);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.book-stage.animate-enter .st-flipbook-root {
+  animation: bookEnter 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Responsive Reader Layout */
+@media (max-width: 640px) {
+  .reader-top-bar {
+    padding: 0.5rem 0.75rem;
+  }
+  .reader-back-btn span {
+    display: none;
+  }
+  .reader-orient-badge {
+    display: none !important;
+  }
+  .reader-glass-select {
+    max-width: 130px;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.6rem;
+  }
+  .dock-zoom-group {
+    display: none !important;
+  }
+  /* Di HP: Sembunyikan kontrol sekunder dari dock utama agar tidak berdesakan */
+  #btn-toggle-autoplay,
+  #btn-toggle-sound,
+  #reader-audio-group,
+  .dock-divider:nth-of-type(n+2) {
+    display: none !important;
+  }
+  .reader-dock {
+    padding: 0.4rem 0.65rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    gap: 0.4rem;
+  }
+  .dock-page-badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+  }
 }

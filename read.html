@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Membaca Handbook — Flipbook Digital</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'/><path d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/></svg>" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23005E6A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'/><path d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/></svg>" />
+    <link rel="stylesheet" href="/src/tokens.css" />
     <link rel="stylesheet" href="/src/style.css" />
     <link rel="stylesheet" href="/src/read.css" />
     <!-- Instant Theme Loader -->
@@ -19,22 +20,47 @@
     <div id="reader-app">
       <!-- Top Minimal Header -->
       <header class="reader-top-bar" id="reader-top-bar">
-        <div class="reader-book-identity">
-          <h1 id="reader-hb-title" class="reader-title">Handbook Digital</h1>
-          <span id="reader-hb-subtitle" class="reader-subtitle"></span>
+        <div class="reader-top-left">
+          <a href="/#catalog" class="reader-back-btn" id="btn-back-catalog" title="Kembali ke Beranda & Katalog">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Katalog</span>
+          </a>
+
+          <div class="reader-book-identity">
+            <div class="reader-title-row">
+              <h1 id="reader-hb-title" class="reader-title">Handbook Digital</h1>
+              <span id="reader-orient-badge" class="reader-orient-badge" style="display: none;">16:9 Slide</span>
+            </div>
+            <span id="reader-hb-subtitle" class="reader-subtitle"></span>
+          </div>
         </div>
 
         <div class="reader-top-actions">
-          <!-- Ambience Environment Selector -->
-          <select id="reader-ambient-select" class="select-custom reader-glass-select">
-            <option value="studio">Ambience: Studio Dark</option>
-            <option value="library">Ambience: Luxury Library Wood</option>
-            <option value="warm">Ambience: Warm Study Cafe</option>
-            <option value="clean">Ambience: Clean Obsidian</option>
-          </select>
+          <!-- Share Button -->
+          <button class="btn-icon" id="btn-reader-share" title="Bagikan / Salin Tautan Handbook" aria-label="Bagikan / Salin Tautan Handbook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          </button>
+
+          <!-- Shortcuts Guide Button -->
+          <button class="btn-icon" id="btn-reader-shortcuts" title="Panduan Tombol Shortcut (?)" aria-label="Panduan Tombol Shortcut">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </button>
 
           <!-- Light/Dark Mode Toggle -->
-          <button class="btn-icon" id="btn-reader-theme" title="Ganti Mode Terang / Gelap">
+          <button class="btn-icon" id="btn-reader-theme" title="Ganti Mode Terang / Gelap" aria-label="Ganti Mode Terang / Gelap">
             <svg id="reader-theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="5"></circle>
               <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -48,6 +74,11 @@
         </div>
       </header>
 
+      <!-- Reading Progress Track -->
+      <div class="reader-progress-track" role="progressbar" aria-label="Kemajuan membaca dokumen" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" title="Kemajuan Membaca">
+        <div class="reader-progress-fill" id="reader-progress-bar"></div>
+      </div>
+
       <!-- Main Reader Viewport -->
       <main class="reader-viewport" id="reader-viewport">
         <!-- Stage: 3D Book Base & Flipbook -->
@@ -58,15 +89,15 @@
 
         <!-- Floating Reader Dock -->
         <nav class="reader-dock" id="reader-dock" aria-label="Kontrol Pembaca">
-          <button class="dock-btn" id="btn-prev-page" title="Halaman Sebelumnya (Panah Kiri)">
+          <button class="dock-btn" id="btn-prev-page" title="Halaman Sebelumnya (Panah Kiri)" aria-label="Halaman Sebelumnya">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
           </button>
 
-          <span class="dock-page-badge" id="page-indicator">Sampul Depan</span>
+          <button class="dock-page-badge clickable" id="page-indicator" title="Klik untuk lompat ke halaman..." aria-label="Klik untuk lompat ke halaman...">Sampul Depan</button>
 
-          <button class="dock-btn" id="btn-next-page" title="Halaman Berikutnya (Panah Kanan / Spasi)">
+          <button class="dock-btn" id="btn-next-page" title="Halaman Berikutnya (Panah Kanan / Spasi)" aria-label="Halaman Berikutnya">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -75,7 +106,7 @@
           <div class="dock-divider"></div>
 
           <!-- TOC Drawer Toggle -->
-          <button class="dock-btn" id="btn-toggle-toc" title="Daftar Halaman & Navigasi Cepat">
+          <button class="dock-btn" id="btn-toggle-toc" title="Daftar Halaman & Navigasi Cepat (T)" aria-label="Daftar Halaman & Navigasi Cepat">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="7" height="7"></rect>
               <rect x="14" y="3" width="7" height="7"></rect>
@@ -84,8 +115,39 @@
             </svg>
           </button>
 
+          <!-- Auto-Play Slide Toggle -->
+          <button class="dock-btn" id="btn-toggle-autoplay" title="Putar Otomatis Presentasi (P)" aria-label="Putar Otomatis Presentasi">
+            <svg id="icon-autoplay-play" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <svg id="icon-autoplay-pause" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: none;">
+              <rect x="6" y="4" width="4" height="16"></rect>
+              <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>
+          </button>
+
+          <div class="dock-divider"></div>
+
+          <!-- Zoom Controls -->
+          <div class="dock-zoom-group">
+            <button class="dock-btn dock-btn-sm" id="btn-zoom-out" title="Perkecil Zoom (-)" aria-label="Perkecil Zoom">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <span class="dock-zoom-val" id="zoom-level-badge" title="Klik untuk Reset Zoom (100%)">100%</span>
+            <button class="dock-btn dock-btn-sm" id="btn-zoom-in" title="Perbesar Zoom (+)" aria-label="Perbesar Zoom">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+
+          <div class="dock-divider"></div>
+
           <!-- Flip Paper Sound Toggle -->
-          <button class="dock-btn active" id="btn-toggle-sound" title="Efek Suara Membalik Kertas">
+          <button class="dock-btn active" id="btn-toggle-sound" title="Efek Suara Membalik Kertas (S)" aria-label="Efek Suara Membalik Kertas">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
               <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -95,8 +157,11 @@
 
           <!-- BGM Control with Volume Slider (if admin added audio) -->
           <div class="audio-dock-group" id="reader-audio-group" style="display: none;">
-            <button class="dock-btn" id="btn-toggle-bgm" title="Musik Latar (Play / Pause)">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button class="dock-btn" id="btn-toggle-bgm" title="Musik Latar (Play / Pause) (M)" aria-label="Musik Latar (Play / Pause)">
+              <div class="audio-waves" id="audio-waves">
+                <span></span><span></span><span></span>
+              </div>
+              <svg id="audio-note-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 18V5l12-2v13"></path>
                 <circle cx="6" cy="18" r="3"></circle>
                 <circle cx="18" cy="16" r="3"></circle>
@@ -109,7 +174,7 @@
           </div>
 
           <!-- Fullscreen Toggle -->
-          <button class="dock-btn" id="btn-toggle-fullscreen" title="Layar Penuh (F)">
+          <button class="dock-btn" id="btn-toggle-fullscreen" title="Layar Penuh (F)" aria-label="Layar Penuh">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
             </svg>
@@ -125,7 +190,7 @@
               </svg>
               <span>Daftar Halaman & Navigasi Cepat</span>
             </div>
-            <button class="btn-icon" id="btn-close-drawer" style="width: 28px; height: 28px;">✕</button>
+            <button class="btn-icon" id="btn-close-drawer" style="width: 28px; height: 28px;" aria-label="Tutup Dialog">✕</button>
           </div>
           <div class="drawer-scroll-track" id="drawer-thumbnails-track">
             <!-- Dynamically populated -->
@@ -134,11 +199,87 @@
       </main>
 
       <!-- ================================================================ -->
+      <!-- KEYBOARD SHORTCUTS MODAL                                         -->
+      <!-- ================================================================ -->
+      <div class="modal-overlay" id="shortcuts-modal" role="dialog" aria-modal="true" aria-labelledby="shortcuts-modal-title" style="display: none;">
+        <div class="modal-box shortcuts-modal-box">
+          <div class="modal-header-row">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.2rem;" aria-hidden="true">⌨️</span>
+              <h3 class="modal-title" id="shortcuts-modal-title" style="margin: 0; font-size: 1.1rem;">Tombol Pintas (Shortcuts)</h3>
+            </div>
+            <button class="btn-icon" id="btn-close-shortcuts" style="width: 28px; height: 28px;" title="Tutup Dialog" aria-label="Tutup Dialog">✕</button>
+          </div>
+          <div class="shortcuts-grid">
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Halaman Sebelumnya</span>
+              <div class="shortcut-keys"><kbd>←</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Halaman Berikutnya</span>
+              <div class="shortcut-keys"><kbd>→</kbd> <span style="font-size: 0.75rem; color: var(--text-muted);">atau</span> <kbd>Spasi</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Auto-Play Slide (5 detik)</span>
+              <div class="shortcut-keys"><kbd>P</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Perbesar / Perkecil (Zoom)</span>
+              <div class="shortcut-keys"><kbd>+</kbd> <kbd>-</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Reset Zoom ke 100%</span>
+              <div class="shortcut-keys"><kbd>0</kbd> <span style="font-size: 0.75rem; color: var(--text-muted);">atau</span> <kbd>Z</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Daftar Isi / Thumbnail</span>
+              <div class="shortcut-keys"><kbd>T</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Layar Penuh (Fullscreen)</span>
+              <div class="shortcut-keys"><kbd>F</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Musik Latar (Play / Pause)</span>
+              <div class="shortcut-keys"><kbd>M</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Efek Suara Balik Kertas</span>
+              <div class="shortcut-keys"><kbd>S</kbd></div>
+            </div>
+            <div class="shortcut-row">
+              <span class="shortcut-desc">Tutup Dialog / Menu</span>
+              <div class="shortcut-keys"><kbd>Esc</kbd></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- JUMP TO PAGE MODAL                                               -->
+      <!-- ================================================================ -->
+      <div class="modal-overlay" id="jump-modal" role="dialog" aria-modal="true" aria-labelledby="jump-modal-title" style="display: none;">
+        <div class="modal-box jump-modal-box">
+          <div class="modal-header-row">
+            <h3 class="modal-title" id="jump-modal-title" style="margin: 0; font-size: 1.05rem;">Lompat ke Halaman</h3>
+            <button class="btn-icon" id="btn-close-jump" style="width: 28px; height: 28px;" title="Tutup Dialog" aria-label="Tutup Dialog">✕</button>
+          </div>
+          <form id="jump-form" style="display: flex; gap: 0.65rem; margin-top: 1rem;">
+            <input type="number" id="input-jump-page" class="input-text" min="1" placeholder="Nomor..." style="font-size: 1.05rem; text-align: center; font-weight: 700; width: 100px;" required />
+            <button type="submit" class="btn-primary-action" style="flex: 1;">
+              <span>Lompat</span>
+            </button>
+          </form>
+          <span id="jump-hint-text" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.65rem; text-align: center;">Halaman 1 sampai X</span>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
       <!-- PASSWORD MODAL (Shown if handbook is protected with password)    -->
       <!-- ================================================================ -->
-      <div class="modal-overlay" id="password-modal" style="display: none;">
+      <div class="modal-overlay" id="password-modal" role="dialog" aria-modal="true" aria-labelledby="pwd-hb-title" style="display: none;">
         <div class="modal-box" style="text-align: center;">
-          <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto; color: var(--accent-primary);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--info-bg); display: flex; align-items: center; justify-content: center; margin: 0 auto; color: var(--accent-primary);">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -182,7 +323,7 @@
       </div>
 
       <!-- Toast Notification -->
-      <div class="toast" id="reader-toast"></div>
+      <div class="toast" id="reader-toast" role="status" aria-live="polite"></div>
     </div>
 
     <script type="module" src="/src/read.js"></script>

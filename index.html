@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Handbook Flipbook — Platform Buku & Presentasi Digital Interaktif</title>
     <meta name="description" content="Baca handbook dan slide presentasi dengan sensasi membalik halaman 3D interaktif, audio musik latar santai, dan tata letak halaman ganda responsif." />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z'/><path d='M6 2v20'/></svg>" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23005E6A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z'/><path d='M6 2v20'/></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/tokens.css" />
     <link rel="stylesheet" href="/src/style.css" />
 
     <!-- Instant Theme Loader (prevents FOUC) -->
@@ -20,42 +21,858 @@
     </script>
 
     <style>
-      :root {
-        --landing-glow: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.15) 0%, rgba(99, 102, 241, 0.08) 35%, transparent 70%);
-      }
-
+      /* ===== LANDING PAGE DESIGN SYSTEM ===== */
       body {
-        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-        background-color: var(--bg-main);
+        font-family: var(--font-sans);
+        background-color: transparent;
         color: var(--text-main);
         overflow-x: hidden;
-        transition: background-color 0.3s ease, color 0.3s ease;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
 
       h1, h2, h3, h4, .brand-title {
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-display);
       }
 
-      /* Navbar */
+      /* ===== NAVBAR — Apple-style translucent sticky bar ===== */
       .landing-nav {
         position: sticky;
         top: 0;
         z-index: 100;
-        background: rgba(9, 13, 22, 0.8);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
         border-bottom: 1px solid var(--border-color);
-        padding: 0.85rem 2rem;
+        padding: 0 2rem;
+        height: 52px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         transition: background 0.3s ease, border-color 0.3s ease;
       }
 
+      [data-theme='dark'] .landing-nav {
+        background: rgba(6, 22, 25, 0.72);
+      }
+
+      /* ===== HERO SECTION ===== */
+      .hero-section {
+        position: relative;
+        padding: 7rem 1.5rem 6rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: hidden;
+        isolation: isolate;
+      }
+
+      @keyframes fadeSlideDown {
+        from { opacity: 0; transform: translateY(-12px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(18px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .hero-title {
+        font-family: var(--font-serif);
+        font-size: clamp(3rem, 6.8vw, 5.2rem);
+        font-weight: 400;
+        letter-spacing: -0.015em;
+        line-height: 1.08;
+        max-width: 920px;
+        margin: 0 auto 1.5rem;
+        color: var(--text-main);
+        text-align: center;
+        text-wrap: balance;
+        animation: fadeSlideUp 0.55s 0.1s ease both;
+      }
+
+      .hero-title em {
+        font-style: italic;
+        color: var(--accent-primary);
+      }
+
+      [data-theme='dark'] .hero-title em {
+        color: #F09199;
+      }
+
+      .hero-desc {
+        font-size: clamp(1.05rem, 2.2vw, 1.22rem);
+        color: var(--text-muted);
+        max-width: 660px;
+        line-height: 1.7;
+        margin: 0 auto 2.75rem;
+        text-align: center;
+        text-wrap: balance;
+        animation: fadeSlideUp 0.55s 0.2s ease both;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.85rem;
+        margin-bottom: 3.5rem;
+        animation: fadeSlideUp 0.55s 0.3s ease both;
+      }
+
+      .btn-hero-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.65rem;
+        background: var(--accent-action);
+        color: var(--accent-action-text);
+        font-size: 1.05rem;
+        font-weight: 700;
+        padding: 0.85rem 2rem;
+        border-radius: 14px;
+        text-decoration: none;
+        box-shadow: 0 8px 24px -4px var(--accent-glow), 0 2px 6px rgba(0,0,0,0.08);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+      }
+
+      .btn-hero-primary:hover {
+        background: var(--accent-action-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 14px 32px -4px var(--accent-glow), 0 4px 10px rgba(0,0,0,0.12);
+      }
+
+      .btn-hero-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        font-size: 1.05rem;
+        font-weight: 600;
+        padding: 0.85rem 1.75rem;
+        border-radius: 14px;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: all 0.25s ease;
+      }
+
+      .btn-hero-secondary:hover {
+        border-color: var(--accent-primary);
+        color: var(--accent-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      }
+
+      /* Hero stats row */
+      .hero-stats {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 0;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        max-width: 720px;
+        width: 100%;
+        animation: fadeSlideUp 0.55s 0.4s ease both;
+      }
+
+      .hero-stat-item {
+        flex: 1;
+        min-width: 140px;
+        padding: 1.25rem 1.5rem;
+        text-align: center;
+        position: relative;
+      }
+
+      .hero-stat-item + .hero-stat-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 20%;
+        height: 60%;
+        width: 1px;
+        background: var(--border-color);
+      }
+
+      .hero-stat-num {
+        font-size: 1.75rem;
+        font-weight: 800;
+        font-family: var(--font-display);
+        color: var(--accent-primary);
+        letter-spacing: -0.03em;
+        line-height: 1;
+        margin-bottom: 0.3rem;
+      }
+
+      .hero-stat-label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      /* ===== CATALOG SECTION ===== */
+      .catalog-section {
+        padding: 5rem 1.5rem 6rem;
+        max-width: 1180px;
+        margin: 0 auto;
+      }
+
+      .catalog-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1.5rem;
+        min-height: 160px;
+      }
+
+      .catalog-grid .hb-catalog-card {
+        width: min(300px, 100%);
+      }
+
+      .catalog-loading {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        padding: 4rem 0;
+      }
+
+      .catalog-spinner {
+        width: 22px;
+        height: 22px;
+        border: 2.5px solid var(--border-color);
+        border-top-color: var(--accent-primary);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .catalog-empty {
+        text-align: center;
+        padding: 5rem 2rem;
+        color: var(--text-muted);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        grid-column: 1 / -1;
+      }
+
+      .catalog-empty h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+      }
+
+      .catalog-empty p {
+        font-size: 0.9rem;
+        max-width: 400px;
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      /* Catalog Toolbar */
+      .catalog-toolbar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+        align-items: center;
+      }
+
+      .catalog-search-wrap {
+        position: relative;
+        width: 100%;
+        max-width: 520px;
+      }
+
+      .catalog-search-wrap .search-icon {
+        position: absolute;
+        left: 1.1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        pointer-events: none;
+      }
+
+      .catalog-search-input {
+        width: 100%;
+        padding: 0.8rem 2.5rem 0.8rem 2.85rem;
+        border-radius: 12px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        font-size: 0.92rem;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.2s ease;
+        box-shadow: var(--shadow-sm);
+        box-sizing: border-box;
+      }
+
+      .catalog-search-input:focus {
+        border-color: var(--accent-primary);
+        box-shadow: var(--focus-ring-shadow);
+      }
+
+      .search-clear-btn {
+        position: absolute;
+        right: 0.9rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 50%;
+        line-height: 1;
+      }
+
+      .search-clear-btn:hover { color: var(--text-main); }
+
+      .catalog-filter-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        justify-content: center;
+      }
+
+      .filter-chip {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        color: var(--text-muted);
+        padding: 0.38rem 0.9rem;
+        border-radius: 9999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+      }
+
+      .filter-chip:hover {
+        border-color: var(--accent-primary);
+        color: var(--text-main);
+      }
+
+      .filter-chip.active {
+        background: var(--accent-primary);
+        color: var(--on-accent-primary);
+        border-color: var(--accent-primary);
+        box-shadow: 0 3px 10px var(--accent-glow);
+      }
+
+      .catalog-count-pill {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-faint);
+      }
+
+      /* ===== HANDBOOK CARD — Refined book-style ===== */
+      .hb-catalog-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    border-color 0.2s ease;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .hb-catalog-card:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: 0 16px 40px -8px rgba(0,0,0,0.16), 0 0 0 1px var(--border-hover), 0 0 24px var(--accent-glow);
+      }
+
+      .hb-card-cover {
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+        background-size: cover;
+        background-position: center;
+        background-color: var(--bg-surface-elevated);
+      }
+
+      .hb-card-cover-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .hb-catalog-card:hover .hb-card-cover-img {
+        transform: scale(1.06);
+      }
+
+      /* Bottom gradient scrim for text legibility */
+      .hb-card-cover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .hb-card-spine {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 20px;
+        background: linear-gradient(to right, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.15) 55%, transparent 100%);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .hb-card-spine-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 4px;
+        width: 1px;
+        background: linear-gradient(to bottom, transparent 5%, rgba(212,175,55,0.6) 30%, rgba(212,175,55,0.6) 70%, transparent 95%);
+        pointer-events: none;
+        z-index: 3;
+      }
+
+      .hb-card-badges-top {
+        position: absolute;
+        top: 9px;
+        right: 9px;
+        display: flex;
+        gap: 0.35rem;
+        z-index: 4;
+      }
+
+      .hb-card-badges-bottom {
+        position: absolute;
+        bottom: 9px;
+        left: 9px;
+        display: flex;
+        gap: 0.35rem;
+        z-index: 4;
+      }
+
+      .hb-badge-pill {
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 9999px;
+        padding: 0.25rem 0.6rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        letter-spacing: 0.01em;
+      }
+
+      .hb-badge-lock {
+        background: rgba(0,0,0,0.65);
+        border-color: rgba(255,165,0,0.5);
+        color: #FFC87A;
+      }
+
+      .hb-badge-orient {
+        background: rgba(0,0,0,0.65);
+        border-color: rgba(54, 194, 209, 0.45);
+        color: #7DDEE8;
+      }
+
+      .hb-card-cover-icon {
+        color: rgba(255, 255, 255, 0.25);
+        position: relative;
+        z-index: 2;
+      }
+
+      .hb-card-info {
+        padding: 1.1rem 1.25rem 1.35rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+
+      .hb-card-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-main);
+        line-height: 1.35;
+        margin: 0;
+        font-family: var(--font-display);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        letter-spacing: -0.01em;
+      }
+
+      .hb-card-subtitle {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .hb-card-cta {
+        margin-top: auto;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--accent-primary);
+        transition: color 0.2s ease;
+      }
+
+      .hb-catalog-card:hover .hb-card-cta {
+        color: var(--accent-primary-hover);
+      }
+
+      .hb-card-cta svg {
+        transition: transform 0.2s ease;
+        opacity: 0.7;
+      }
+
+      .hb-catalog-card:hover .hb-card-cta svg {
+        transform: translateX(4px);
+        opacity: 1;
+      }
+
+      /* ===== SECTION SHARED STYLES ===== */
+      .section-header {
+        text-align: center;
+        max-width: 720px;
+        margin: 0 auto 3.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .section-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--accent-primary);
+        background: var(--info-bg);
+        border: 1px solid var(--border-hover);
+        padding: 0.25rem 0.9rem;
+        border-radius: 9999px;
+        margin-bottom: 1rem;
+      }
+
+      .section-title {
+        font-family: var(--font-serif);
+        font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+        font-weight: 400;
+        margin-bottom: 0.85rem;
+        color: var(--text-main);
+        letter-spacing: -0.015em;
+        line-height: 1.15;
+        text-align: center;
+        text-wrap: balance;
+      }
+
+      .section-title em {
+        font-style: italic;
+        color: var(--accent-primary);
+      }
+
+      [data-theme='dark'] .section-title em {
+        color: #F09199;
+      }
+
+      .section-desc {
+        font-size: 1.05rem;
+        color: var(--text-muted);
+        max-width: 620px;
+        margin: 0 auto;
+        line-height: 1.7;
+        text-align: center;
+        text-wrap: balance;
+      }
+
+      /* ===== FEATURES SECTION ===== */
+      .features-section {
+        padding: 6rem 1.5rem;
+        max-width: 1180px;
+        margin: 0 auto;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+        gap: 1.25rem;
+      }
+
+      .feature-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem 1.75rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Subtle top accent line on hover */
+      .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent-primary);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .feature-card:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg), 0 0 20px var(--accent-glow);
+      }
+
+      .feature-card:hover::before {
+        opacity: 1;
+      }
+
+      .feature-icon-wrap {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--info-bg);
+        border: 1px solid var(--border-hover);
+        color: var(--accent-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.25rem;
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+
+      .feature-card:hover .feature-icon-wrap {
+        background: var(--accent-primary);
+        color: var(--on-accent-primary);
+        transform: scale(1.05);
+      }
+
+      .feature-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 0.55rem;
+        color: var(--text-main);
+        letter-spacing: -0.01em;
+      }
+
+      .feature-text {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        line-height: 1.65;
+        margin: 0;
+      }
+
+      /* ===== STEPS SECTION ===== */
+      .steps-section {
+        padding: 5.5rem 1.5rem 6rem;
+        background: var(--bg-surface-elevated);
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+        max-width: 1040px;
+        margin: 0 auto;
+        position: relative;
+      }
+
+      /* Connecting line between steps (desktop) */
+      @media (min-width: 768px) {
+        .steps-grid::before {
+          content: '';
+          position: absolute;
+          top: 2.5rem;
+          left: 10%;
+          right: 10%;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, var(--border-hover) 20%, var(--border-hover) 80%, transparent);
+          z-index: 0;
+        }
+      }
+
+      .step-item {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem 1.75rem;
+        position: relative;
+        box-shadow: var(--shadow-sm);
+        z-index: 1;
+        transition: all 0.25s ease;
+      }
+
+      .step-item:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md), 0 0 16px var(--accent-glow);
+      }
+
+      .step-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: var(--accent-primary);
+        color: var(--on-accent-primary);
+        font-size: 0.88rem;
+        font-weight: 800;
+        font-family: var(--font-display);
+        margin-bottom: 1.25rem;
+        box-shadow: 0 4px 12px var(--accent-glow);
+      }
+
+      .step-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 0.45rem;
+        color: var(--text-main);
+        letter-spacing: -0.01em;
+      }
+
+      .step-desc {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      /* ===== CTA BANNER ===== */
+      .cta-banner-section {
+        padding: 6rem 1.5rem;
+        text-align: center;
+      }
+
+      .cta-banner-box {
+        max-width: 820px;
+        margin: 0 auto;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-hover);
+        border-radius: 24px;
+        padding: 4.5rem 2.5rem;
+        box-shadow: var(--shadow-lg), 0 0 50px var(--accent-glow);
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+      }
+
+      .cta-banner-box::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,94,106,0.12) 0%, transparent 60%),
+          radial-gradient(ellipse 40% 30% at 90% 80%, rgba(241,90,35,0.08) 0%, transparent 60%);
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      [data-theme='dark'] .cta-banner-box::before {
+        background:
+          radial-gradient(ellipse 70% 50% at 50% 0%, rgba(54,194,209,0.15) 0%, transparent 60%),
+          radial-gradient(ellipse 40% 30% at 90% 80%, rgba(255,123,71,0.08) 0%, transparent 60%);
+      }
+
+      .cta-title {
+        font-family: var(--font-serif);
+        font-size: clamp(2.4rem, 4.8vw, 3.6rem);
+        font-weight: 400;
+        margin-bottom: 1rem;
+        color: var(--text-main);
+        letter-spacing: -0.015em;
+        line-height: 1.15;
+        text-align: center;
+        text-wrap: balance;
+      }
+
+      .cta-title em {
+        font-style: italic;
+        color: var(--accent-primary);
+      }
+
+      [data-theme='dark'] .cta-title em {
+        color: #F09199;
+      }
+
+      .cta-desc {
+        font-size: 1.05rem;
+        color: var(--text-muted);
+        max-width: 500px;
+        margin: 0 auto 2.5rem;
+        line-height: 1.65;
+      }
+
+      /* ===== FOOTER ===== */
+      .landing-footer {
+        border-top: 1px solid var(--border-color);
+        padding: 2rem 1.5rem;
+        text-align: center;
+        color: var(--text-faint);
+        font-size: 0.85rem;
+        background: var(--bg-surface);
+      }
+
+      /* ===== NAV COMMON ===== */
       .nav-brand-group {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.7rem;
         text-decoration: none;
         color: var(--text-main);
       }
@@ -72,594 +889,90 @@
       .nav-links a {
         text-decoration: none;
         color: var(--text-muted);
-        font-size: 0.95rem;
+        font-size: 0.92rem;
         font-weight: 500;
         transition: color 0.2s ease;
       }
 
-      .nav-links a:hover {
-        color: var(--accent-primary);
-      }
+      .nav-links a:hover { color: var(--accent-primary); }
 
       .nav-right-actions {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.6rem;
       }
 
       .btn-nav-cta {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        background: linear-gradient(135deg, #0284c7, #2563eb);
-        color: #ffffff;
-        padding: 0.55rem 1.25rem;
-        border-radius: 9999px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-decoration: none;
-        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
-        transition: all 0.25s ease;
-      }
-
-      .btn-nav-cta:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
-      }
-
-      /* Hero Section */
-      .hero-section {
-        position: relative;
-        padding: 6rem 1.5rem 5rem;
-        text-align: center;
-        background: var(--landing-glow);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.4rem 1rem;
-        border-radius: 9999px;
-        background: rgba(56, 189, 248, 0.1);
-        border: 1px solid rgba(56, 189, 248, 0.25);
-        color: var(--accent-primary);
-        font-size: 0.85rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-      }
-
-      .hero-title {
-        font-size: clamp(2.3rem, 5vw, 3.8rem);
-        font-weight: 800;
-        letter-spacing: -0.03em;
-        line-height: 1.15;
-        max-width: 860px;
-        margin: 0 auto 1.25rem;
-        background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .hero-desc {
-        font-size: clamp(1rem, 2vw, 1.2rem);
-        color: var(--text-muted);
-        max-width: 680px;
-        line-height: 1.65;
-        margin: 0 auto 2.5rem;
-      }
-
-      .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        margin-bottom: 2.5rem;
-      }
-
-      .btn-hero-primary {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.65rem;
-        background: linear-gradient(135deg, #0284c7 0%, #3b82f6 100%);
-        color: #ffffff;
-        font-size: 1.05rem;
-        font-weight: 700;
-        padding: 0.9rem 2rem;
-        border-radius: 12px;
-        text-decoration: none;
-        box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.5), 0 0 20px rgba(56, 189, 248, 0.2);
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .btn-hero-primary:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 15px 35px -5px rgba(2, 132, 199, 0.65), 0 0 30px rgba(56, 189, 248, 0.35);
-      }
-
-      .btn-hero-secondary {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid var(--border-color);
-        color: var(--text-main);
-        font-size: 1.05rem;
-        font-weight: 600;
-        padding: 0.9rem 1.75rem;
-        border-radius: 12px;
-        text-decoration: none;
-        backdrop-filter: blur(10px);
-        transition: all 0.25s ease;
-      }
-
-      .btn-hero-secondary:hover {
-        background: rgba(30, 41, 59, 0.9);
-        border-color: var(--accent-primary);
-        color: var(--accent-primary);
-        transform: translateY(-2px);
-      }
-
-      .floating-badges-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.85rem;
-        justify-content: center;
-        max-width: 820px;
-        margin: 0 auto;
-      }
-
-      .floating-badge {
-        display: inline-flex;
-        align-items: center;
         gap: 0.45rem;
-        background: rgba(15, 23, 42, 0.75);
-        border: 1px solid var(--border-color);
-        padding: 0.55rem 1.1rem;
+        background: var(--accent-action);
+        color: var(--accent-action-text);
+        padding: 0.5rem 1.1rem;
         border-radius: 9999px;
         font-size: 0.88rem;
-        font-weight: 500;
-        color: var(--text-muted);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 3px 10px var(--accent-glow);
         transition: all 0.2s ease;
       }
 
-      .floating-badge:hover {
-        border-color: var(--accent-primary);
-        color: var(--text-main);
-        transform: translateY(-2px);
+      .btn-nav-cta:hover {
+        background: var(--accent-action-hover);
+        transform: translateY(-1px);
       }
 
-      /* Features Section */
-      .features-section {
-        padding: 6rem 1.5rem;
-        max-width: 1140px;
-        margin: 0 auto;
-      }
-
-      .section-header {
-        text-align: center;
-        margin-bottom: 4rem;
-      }
-
-      .section-badge {
-        font-size: 0.82rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--accent-primary);
-        margin-bottom: 0.5rem;
-        display: block;
-      }
-
-      .section-title {
-        font-size: clamp(1.8rem, 3.5vw, 2.6rem);
-        font-weight: 800;
-        margin-bottom: 1rem;
-      }
-
-      .section-desc {
-        font-size: 1.05rem;
-        color: var(--text-muted);
-        max-width: 600px;
-        margin: 0 auto;
-        line-height: 1.6;
-      }
-
-      .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 1.75rem;
-      }
-
-      .feature-card {
-        background: var(--bg-surface);
+      /* btn-icon used in navbar */
+      .btn-icon {
+        background: none;
         border: 1px solid var(--border-color);
-        border-radius: 20px;
-        padding: 2.25rem 2rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .feature-card:hover {
-        border-color: rgba(56, 189, 248, 0.4);
-        transform: translateY(-5px);
-        box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 0 25px var(--accent-glow);
-      }
-
-      .feature-icon-wrap {
-        width: 54px;
-        height: 54px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(99, 102, 241, 0.15));
-        border: 1px solid rgba(56, 189, 248, 0.25);
-        color: var(--accent-primary);
+        color: var(--text-muted);
+        width: 36px;
+        height: 36px;
+        border-radius: 9999px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
       }
 
-      .feature-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin-bottom: 0.65rem;
+      .btn-icon:hover {
         color: var(--text-main);
+        border-color: var(--border-strong);
+        background: var(--bg-surface-elevated);
       }
 
-      .feature-text {
-        font-size: 0.92rem;
-        color: var(--text-muted);
-        line-height: 1.65;
-        margin: 0;
-      }
-
-      /* How to Read Section */
-      .steps-section {
-        padding: 5rem 1.5rem 6rem;
-        background: rgba(15, 23, 42, 0.4);
-        border-top: 1px solid var(--border-color);
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      .steps-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 2rem;
-        max-width: 1040px;
-        margin: 0 auto;
-      }
-
-      .step-item {
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
-        border-radius: 18px;
-        padding: 2rem 1.75rem;
-        position: relative;
-      }
-
-      .step-num {
-        font-size: 1.75rem;
-        font-weight: 800;
-        color: var(--accent-primary);
-        margin-bottom: 1rem;
-        font-family: 'Outfit', sans-serif;
-      }
-
-      .step-title {
-        font-size: 1.15rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-      }
-
-      .step-desc {
-        font-size: 0.88rem;
-        color: var(--text-muted);
-        line-height: 1.6;
-        margin: 0;
-      }
-
-      /* Bottom CTA Banner */
-      .cta-banner-section {
-        padding: 6rem 1.5rem;
-        text-align: center;
-      }
-
-      .cta-banner-box {
-        max-width: 860px;
-        margin: 0 auto;
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
-        border: 1px solid rgba(56, 189, 248, 0.25);
-        border-radius: 28px;
-        padding: 4rem 2rem;
-        box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6), 0 0 40px rgba(56, 189, 248, 0.15);
-      }
-
-      .cta-title {
-        font-size: clamp(2rem, 4vw, 2.8rem);
-        font-weight: 800;
-        margin-bottom: 1rem;
-      }
-
-      .cta-desc {
-        font-size: 1.1rem;
-        color: var(--text-muted);
-        max-width: 560px;
-        margin: 0 auto 2.25rem;
-        line-height: 1.6;
-      }
-
-      /* Footer */
-      .landing-footer {
-        border-top: 1px solid var(--border-color);
-        padding: 2.5rem 1.5rem;
-        text-align: center;
-        color: var(--text-muted);
-        font-size: 0.88rem;
-      }
-
-      /* ====================================================================
-         LIGHT THEME SPECIFICS FOR LANDING PAGE
-         ==================================================================== */
-      [data-theme='light'] body {
-        background-color: #f8fafc;
-        color: #0f172a;
-      }
-
-      [data-theme='light'] .landing-nav {
-        background: rgba(255, 255, 255, 0.88);
-        border-bottom-color: rgba(0, 0, 0, 0.08);
-      }
-
-      [data-theme='light'] .hero-section {
-        background: radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.1) 0%, rgba(99, 102, 241, 0.04) 40%, transparent 70%);
-      }
-
-      [data-theme='light'] .hero-title {
-        background: linear-gradient(180deg, #0f172a 30%, #475569 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      [data-theme='light'] .btn-hero-secondary {
-        background: #ffffff;
-        border-color: rgba(0, 0, 0, 0.12);
-        color: #0f172a;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-      }
-
-      [data-theme='light'] .btn-hero-secondary:hover {
-        background: #f1f5f9;
-        border-color: var(--accent-primary);
-      }
-
-      [data-theme='light'] .floating-badge {
-        background: #ffffff;
-        border-color: rgba(0, 0, 0, 0.08);
-        color: #475569;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      }
-
-      [data-theme='light'] .feature-card,
-      [data-theme='light'] .step-item {
-        background: #ffffff;
-        border-color: rgba(0, 0, 0, 0.08);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-      }
-
-      [data-theme='light'] .steps-section {
-        background: rgba(241, 245, 249, 0.6);
-        border-top-color: rgba(0, 0, 0, 0.06);
-        border-bottom-color: rgba(0, 0, 0, 0.06);
-      }
-
-      [data-theme='light'] .cta-banner-box {
-        background: linear-gradient(135deg, #ffffff, #f1f5f9);
-        border-color: rgba(2, 132, 199, 0.25);
-        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.06), 0 0 30px rgba(2, 132, 199, 0.08);
-      }
-
-      [data-theme='light'] .landing-footer {
-        border-top-color: rgba(0, 0, 0, 0.08);
-        background: #ffffff;
-      }
-
+      /* ===== RESPONSIVE ===== */
       @media (max-width: 768px) {
         .landing-nav {
-          padding: 0.85rem 1.25rem;
+          padding: 0 1.25rem;
+          height: 50px;
         }
-        .nav-links {
-          display: none;
+        .nav-links { display: none; }
+        .hero-section { padding: 5rem 1.25rem 4.5rem; }
+        .hero-stats { flex-direction: column; }
+        .hero-stat-item + .hero-stat-item::before { display: none; }
+        .features-grid { grid-template-columns: 1fr; }
+        .cta-banner-box { padding: 3rem 1.5rem; }
+      }
+
+      @media (max-width: 480px) {
+        .hero-title { font-size: 2.1rem; }
+        .btn-hero-primary, .btn-hero-secondary {
+          width: 100%;
+          justify-content: center;
         }
-        .hero-section {
-          padding: 4rem 1rem 3.5rem;
-        }
-      }
-
-      /* ====================================================================
-         CATALOG SECTION
-         ==================================================================== */
-      .catalog-section {
-        padding: 5rem 1.5rem 6rem;
-        max-width: 1140px;
-        margin: 0 auto;
-      }
-
-      .catalog-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 1.75rem;
-        min-height: 160px;
-      }
-
-      .catalog-loading {
-        grid-column: 1 / -1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        color: var(--text-muted);
-        font-size: 0.95rem;
-        padding: 3rem 0;
-      }
-
-      .catalog-spinner {
-        width: 24px;
-        height: 24px;
-        border: 3px solid var(--border-color);
-        border-top-color: var(--accent-primary);
-        border-radius: 50%;
-        animation: spin 0.75s linear infinite;
-      }
-
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-
-      .catalog-empty {
-        text-align: center;
-        padding: 4rem 2rem;
-        color: var(--text-muted);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-      }
-
-      .catalog-empty h3 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-main);
-        margin: 0;
-      }
-
-      .catalog-empty p {
-        font-size: 0.9rem;
-        max-width: 420px;
-        line-height: 1.6;
-        margin: 0;
-      }
-
-      /* Handbook Card */
-      .hb-catalog-card {
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
-        border-radius: 20px;
-        overflow: hidden;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        text-decoration: none;
-        color: inherit;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .hb-catalog-card:hover {
-        border-color: rgba(56, 189, 248, 0.45);
-        transform: translateY(-6px);
-        box-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.5), 0 0 28px var(--accent-glow);
-      }
-
-      .hb-card-cover {
-        height: 160px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
-        flex-shrink: 0;
-      }
-
-      .hb-card-cover-icon {
-        color: rgba(255, 255, 255, 0.35);
-      }
-
-      .hb-card-lock-badge {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        padding: 0.3rem 0.6rem;
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-size: 0.72rem;
-        font-weight: 600;
-        color: #fbbf24;
-        backdrop-filter: blur(8px);
-      }
-
-      .hb-card-page-count {
-        position: absolute;
-        bottom: 12px;
-        left: 12px;
-        background: rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 8px;
-        padding: 0.25rem 0.6rem;
-        font-size: 0.72rem;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(8px);
-      }
-
-      .hb-card-info {
-        padding: 1.25rem 1.5rem 1.5rem;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-      }
-
-      .hb-card-title {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: var(--text-main);
-        line-height: 1.35;
-        margin: 0;
-        font-family: 'Outfit', sans-serif;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-
-      .hb-card-subtitle {
-        font-size: 0.82rem;
-        color: var(--text-muted);
-        margin: 0;
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-
-      .hb-card-cta {
-        margin-top: auto;
-        padding-top: 0.85rem;
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: var(--accent-primary);
-      }
-
-      [data-theme='light'] .hb-catalog-card {
-        background: #ffffff;
-        border-color: rgba(0, 0, 0, 0.08);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
       }
     </style>
   </head>
   <body>
+    <!-- Untitled Blend (1) Retro Fluid Animated Background -->
+    <div class="blend-bg-container" aria-hidden="true">
+      <canvas id="blend-bg-canvas" class="blend-bg-canvas"></canvas>
+      <div class="blend-bg-grain"></div>
+    </div>
+
     <!-- Top Navigation Bar (NO ADMIN LINK) -->
     <header class="landing-nav">
       <a href="/" class="nav-brand-group">
@@ -708,52 +1021,50 @@
     <main>
       <!-- Hero Section -->
       <section class="hero-section">
-        <div class="hero-badge">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-          <span>Platform Buku & Slide Digital Interaktif</span>
-        </div>
-
         <h1 class="hero-title">
-          Sensasi Membaca Dokumen Layaknya Membuka Buku Nyata
+          Kemewahan Membaca Digital<br>
+          <em>dalam Sentuhan Buku Nyata</em>
         </h1>
 
         <p class="hero-desc">
-          Nikmati pengalaman membaca materi, slide presentasi, dan panduan organisasi dengan animasi 3D membalik halaman halus, tata letak dua halaman berdampingan, serta audio latar santai.
+          Nikmati keanggunan membaca dokumen melalui gerak membalik halaman 3D yang luwes, bentangan dua sisi yang proporsional, serta alunan audio latar yang menenangkan.
         </p>
 
         <div class="hero-actions">
           <a href="#catalog" class="btn-hero-primary" id="btn-hero-read">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
             </svg>
-            <span>Jelajahi Handbook</span>
+            <span>Jelajahi Koleksi</span>
           </a>
 
           <a href="#features" class="btn-hero-secondary">
-            <span>Lihat Fitur Interaktif</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
+            <span>Pelajari Pengalaman</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="6 9 12 15 18 9"/>
             </svg>
           </a>
         </div>
 
-        <!-- 4 Key Highlights Row (Clean & Balanced) -->
-        <div class="floating-badges-row">
-          <span class="floating-badge">
-            <span>📖</span> Dua Halaman Berdampingan (Spread View)
-          </span>
-          <span class="floating-badge">
-            <span>✨</span> Efek 3D Page-Flip Realistis
-          </span>
-          <span class="floating-badge">
-            <span>🎵</span> Musik Latar Pengiring
-          </span>
-          <span class="floating-badge">
-            <span>📱</span> Responsif Desktop & Mobile
-          </span>
+        <!-- Social proof / key metrics row -->
+        <div class="hero-stats">
+          <div class="hero-stat-item">
+            <div class="hero-stat-num">3D</div>
+            <div class="hero-stat-label">Sensasi Taktil Alami</div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-num">2×</div>
+            <div class="hero-stat-label">Bentang Halaman Ganda</div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-num">4</div>
+            <div class="hero-stat-label">Suasana Membaca</div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-num">♪</div>
+            <div class="hero-stat-label">Iringan Melodi Harmonis</div>
+          </div>
         </div>
       </section>
 
@@ -762,9 +1073,31 @@
       <!-- ================================================================ -->
       <section id="catalog" class="catalog-section">
         <div class="section-header">
-          <span class="section-badge">Koleksi Digital</span>
-          <h2 class="section-title">Handbook Tersedia</h2>
-          <p class="section-desc">Pilih handbook yang ingin Anda baca. Beberapa handbook memerlukan PIN yang dapat diperoleh dari administrator.</p>
+          <span class="section-badge">Perpustakaan Digital</span>
+          <h2 class="section-title">Koleksi Handbook <em>Terpilih</em></h2>
+          <p class="section-desc">Telusuri berbagai publikasi, presentasi, dan panduan digital dalam format buku interaktif yang siap dibaca.</p>
+        </div>
+
+        <!-- Catalog Search & Filter Toolbar -->
+        <div class="catalog-toolbar">
+          <div class="catalog-search-wrap">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="catalog-search-input" class="catalog-search-input" placeholder="Cari judul handbook, topik, atau penulis..." autocomplete="off" />
+            <button type="button" id="catalog-search-clear" class="search-clear-btn" style="display: none;" title="Hapus pencarian" aria-label="Hapus pencarian">✕</button>
+          </div>
+
+          <div class="catalog-filter-chips">
+            <button type="button" class="filter-chip active" data-filter="all" aria-label="Semua koleksi">Semua Koleksi</button>
+            <button type="button" class="filter-chip" data-filter="landscape" aria-label="Slide 16:9">Format Lanskap 16:9</button>
+            <button type="button" class="filter-chip" data-filter="portrait" aria-label="Buku Portrait">Format Tegak</button>
+            <button type="button" class="filter-chip" data-filter="open" aria-label="Bebas PIN">Akses Bebas</button>
+            <button type="button" class="filter-chip" data-filter="locked" aria-label="Butuh PIN">Terproteksi PIN</button>
+          </div>
+
+          <span class="catalog-count-pill" id="catalog-count-badge">Memuat katalog...</span>
         </div>
 
         <!-- Catalog Grid (dynamically populated) -->
@@ -781,18 +1114,18 @@
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
             <path d="M6 2v20"/>
           </svg>
-          <h3>Belum Ada Handbook</h3>
-          <p>Administrator belum mempublikasikan handbook. Silakan hubungi administrator untuk mendapatkan akses.</p>
+          <h3>Belum Ada Koleksi Tersedia</h3>
+          <p>Belum ada publikasi yang dirilis saat ini. Silakan hubungi pengelola untuk informasi ketersediaan materi.</p>
         </div>
       </section>
 
       <!-- Features Section -->
       <section id="features" class="features-section">
         <div class="section-header">
-          <span class="section-badge">Pengalaman Modern</span>
-          <h2 class="section-title">Fitur Membaca yang Memukau</h2>
+          <span class="section-badge">Keunggulan Desain</span>
+          <h2 class="section-title">Harmoni Estetika &amp; <em>Teknologi</em></h2>
           <p class="section-desc">
-            Didesain khusus untuk memberikan kenyamanan membaca dokumen digital tanpa rasa monoton dan melelahkan.
+            Dirancang secara presisi demi kenyamanan visual, menghadirkan keintiman membaca buku fisik dalam kemudahan akses digital.
           </p>
         </div>
 
@@ -800,86 +1133,86 @@
           <!-- Feature 1 -->
           <div class="feature-card">
             <div class="feature-icon-wrap">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
                 <path d="M6 2v20"/>
               </svg>
             </div>
-            <h3 class="feature-title">Animasi 3D Realistis</h3>
+            <h3 class="feature-title">Dinamika 3D Autentik</h3>
             <p class="feature-text">
-              Sensasi membalik halaman halus dengan bayangan mendalam dan kelengkungan kertas dinamis, menyerupai lembaran buku fisik asli.
+              Sensasi gerak lembaran lentur berpadu bayangan jilid tengah yang realistis, membangkitkan nostalgia membaca buku fisik.
             </p>
           </div>
 
           <!-- Feature 2 -->
           <div class="feature-card">
             <div class="feature-icon-wrap">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
                 <line x1="8" y1="21" x2="16" y2="21"/>
                 <line x1="12" y1="17" x2="12" y2="21"/>
               </svg>
             </div>
-            <h3 class="feature-title">Format Dua Halaman (Spread)</h3>
+            <h3 class="feature-title">Bentang Halaman Ganda</h3>
             <p class="feature-text">
-              Tata letak kiri & kanan proporsional yang memaksimalkan luas layar laptop maupun PC, membuat teks slide tetap tajam dan mudah dibaca.
+              Komposisi dua halaman berdampingan yang proporsional, menyajikan materi slide secara utuh dengan keterbacaan prima.
             </p>
           </div>
 
           <!-- Feature 3 -->
           <div class="feature-card">
             <div class="feature-icon-wrap">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <path d="M9 18V5l12-2v13"/>
                 <circle cx="6" cy="18" r="3"/>
                 <circle cx="18" cy="16" r="3"/>
               </svg>
             </div>
-            <h3 class="feature-title">Musik Latar Relaksasi</h3>
+            <h3 class="feature-title">Alunan Musik Relaksasi</h3>
             <p class="feature-text">
-              Dukungan audio instrumen yang menenangkan dengan kendali volume mandiri, membantu pembaca lebih rileks dan fokus pada isi materi.
+              Iringan melodi instrumen yang menenangkan untuk membantu fokus pikiran dan menciptakan suasana membaca yang hening.
             </p>
           </div>
 
           <!-- Feature 4 -->
           <div class="feature-card">
             <div class="feature-icon-wrap">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <rect x="3" y="3" width="7" height="7"/>
                 <rect x="14" y="3" width="7" height="7"/>
                 <rect x="14" y="14" width="7" height="7"/>
                 <rect x="3" y="14" width="7" height="7"/>
               </svg>
             </div>
-            <h3 class="feature-title">Drawer Thumbnail Cepat</h3>
+            <h3 class="feature-title">Navigasi Visual Cepat</h3>
             <p class="feature-text">
-              Lompat ke halaman mana pun dalam sekejap dengan drawer pratinjau thumbnail, slider halaman bawah, atau tombol panah keyboard.
+              Jelajahi isi buku dalam sekejap melalui panel thumbnail visual, slider halaman presisi, atau pintasan papan tombol.
             </p>
           </div>
 
           <!-- Feature 5 -->
           <div class="feature-card">
             <div class="feature-icon-wrap">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
               </svg>
             </div>
             <h3 class="feature-title">Mode Layar Penuh</h3>
             <p class="feature-text">
-              Nikmati bacaan tanpa gangguan jendela browser dengan fitur Fullscreen satu klik untuk tampilan visual maksimal.
+              Fokus penuh tanpa gangguan elemen peramban untuk pengalaman presentasi dan penjelajahan dokumen yang mendalam.
             </p>
           </div>
 
           <!-- Feature 6 -->
           <div class="feature-card">
             <div class="feature-icon-wrap">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
             </div>
-            <h3 class="feature-title">Aman & Ringan</h3>
+            <h3 class="feature-title">Aman &amp; Tanpa Unduh</h3>
             <p class="feature-text">
-              Tidak membutuhkan instalasi aplikasi apa pun. Cukup buka link di browser modern dan dokumen langsung siap dibaca.
+              Berjalan mulus di seluruh peramban modern tanpa instalasi aplikasi tambahan, dengan proteksi PIN untuk dokumen privat.
             </p>
           </div>
         </div>
@@ -887,29 +1220,29 @@
 
       <!-- How to Read Section -->
       <section id="how-to-read" class="steps-section">
-        <div class="section-header" style="margin-bottom: 3rem;">
-          <span class="section-badge">Panduan Navigasi</span>
-          <h2 class="section-title">Cara Membaca Flipbook</h2>
-          <p class="section-desc">Tiga langkah sederhana untuk menjelajahi lembaran digital.</p>
+        <div class="section-header">
+          <span class="section-badge">Panduan Interaksi</span>
+          <h2 class="section-title">Tiga Langkah <em>Menikmati Bacaan</em></h2>
+          <p class="section-desc">Alur sederhana dan intuitif untuk memulai penjelajahan publikasi Anda.</p>
         </div>
 
         <div class="steps-grid">
           <div class="step-item">
             <div class="step-num">01</div>
-            <h3 class="step-title">Buka Handbook</h3>
-            <p class="step-desc">Klik tombol "Mulai Membaca" untuk langsung memuat lembaran buku digital secara instan.</p>
+            <h3 class="step-title">Pilih Publikasi</h3>
+            <p class="step-desc">Temukan handbook dari katalog publik atau masukkan PIN akses untuk membuka dokumen terproteksi.</p>
           </div>
 
           <div class="step-item">
             <div class="step-num">02</div>
-            <h3 class="step-title">Balik Halaman</h3>
-            <p class="step-desc">Tarik sudut halaman dengan mouse/sentuhan, tekan tombol panah keyboard, atau klik tombol navigasi samping.</p>
+            <h3 class="step-title">Balik Lembaran</h3>
+            <p class="step-desc">Tarik sudut halaman dengan kursor atau sentuhan, gunakan tombol arah keyboard, atau aktifkan putar otomatis.</p>
           </div>
 
           <div class="step-item">
             <div class="step-num">03</div>
-            <h3 class="step-title">Kenyamanan Ekstra</h3>
-            <p class="step-desc">Aktifkan musik latar dan masuk ke mode layar penuh untuk pengalaman membaca yang imersif.</p>
+            <h3 class="step-title">Nikmati Suasana</h3>
+            <p class="step-desc">Sesuaikan pencahayaan latar, nyalakan iringan musik, dan aktifkan layar penuh demi kenyamanan prima.</p>
           </div>
         </div>
       </section>
@@ -917,12 +1250,12 @@
       <!-- Bottom CTA Banner -->
       <section class="cta-banner-section">
         <div class="cta-banner-box">
-          <h2 class="cta-title">Siap Membuka Lembaran Handbook?</h2>
+          <h2 class="cta-title">Siap Membuka <em>Lembaran Baru?</em></h2>
           <p class="cta-desc">
-            Gulir ke atas dan pilih handbook yang ingin Anda baca. Dapatkan PIN dari administrator untuk handbook yang terproteksi.
+            Pilih handbook yang Anda inginkan sekarang dan rasakan pengalaman membaca digital yang berkelas dan menenangkan.
           </p>
-          <a href="#catalog" class="btn-hero-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;">
-            <span>Lihat Semua Handbook ➔</span>
+          <a href="#catalog" class="btn-hero-primary" style="font-size: 1.05rem; padding: 0.95rem 2.4rem;">
+            <span>Mulai Jelajahi Perpustakaan →</span>
           </a>
         </div>
       </section>
@@ -944,8 +1277,11 @@
       </div>
     </footer>
 
-    <!-- Theme Toggle Script -->
+    <!-- Theme Toggle & Blend Background Script -->
     <script type="module">
+      import { initBlendBackground } from '/src/blend-retro.js';
+      initBlendBackground('blend-bg-canvas');
+
       const btnTheme = document.getElementById('btn-theme-toggle');
 
       function syncThemeUI(theme) {
@@ -992,10 +1328,15 @@
       }
     </script>
 
-    <!-- Catalog Load Script -->
+    <!-- Catalog Load & Filter Script -->
     <script>
+      const catalogState = {
+        allHandbooks: [],
+        activeFilter: 'all',
+        searchQuery: ''
+      };
+
       async function loadCatalog() {
-        const grid = document.getElementById('catalog-grid');
         const loadingEl = document.getElementById('catalog-loading');
         const emptyEl = document.getElementById('catalog-empty');
 
@@ -1008,16 +1349,16 @@
             throw new Error('API unavailable');
           }
 
-          // Hide loading
           if (loadingEl) loadingEl.style.display = 'none';
 
           if (!handbooks || handbooks.length === 0) {
-            emptyEl.style.display = 'flex';
+            catalogState.allHandbooks = [];
+            renderFilteredCatalog();
             return;
           }
 
-          emptyEl.style.display = 'none';
-          handbooks.forEach(hb => renderHandbookCard(grid, hb));
+          catalogState.allHandbooks = handbooks;
+          renderFilteredCatalog();
 
         } catch (err) {
           // Fallback: try localStorage
@@ -1028,21 +1369,114 @@
               const list = JSON.parse(local);
               const published = list.filter(h => h.isPublished !== false && h.isActive !== false);
               if (published.length > 0) {
-                published.forEach(hb => renderHandbookCard(grid, {
+                catalogState.allHandbooks = published.map(hb => ({
                   id: hb.id,
                   uniqueSlug: hb.uniqueSlug,
                   title: hb.title,
                   subtitle: hb.subtitle,
+                  orientation: hb.orientation,
                   coverColor: hb.coverColor,
+                  coverImage: (hb.pages && hb.pages.length > 0) ? (hb.pages[0].imageUrl || hb.pages[0].dataUrl || null) : null,
                   pageCount: (hb.pages || []).length,
                   hasPassword: !!(hb.readerPassword && hb.readerPassword.trim())
                 }));
+                renderFilteredCatalog();
                 return;
               }
             } catch (e) {}
           }
-          emptyEl.style.display = 'flex';
+          catalogState.allHandbooks = [];
+          renderFilteredCatalog();
         }
+      }
+
+      function renderFilteredCatalog() {
+        const grid = document.getElementById('catalog-grid');
+        const emptyEl = document.getElementById('catalog-empty');
+        const countBadge = document.getElementById('catalog-count-badge');
+        if (!grid) return;
+
+        // Filter items
+        const q = catalogState.searchQuery.trim().toLowerCase();
+        const f = catalogState.activeFilter;
+
+        const filtered = catalogState.allHandbooks.filter(hb => {
+          // Search query check
+          if (q) {
+            const titleMatch = (hb.title || '').toLowerCase().includes(q);
+            const subMatch = (hb.subtitle || '').toLowerCase().includes(q);
+            if (!titleMatch && !subMatch) return false;
+          }
+
+          // Category filter
+          if (f === 'landscape') return hb.orientation === 'landscape';
+          if (f === 'portrait') return hb.orientation !== 'landscape';
+          if (f === 'open') return !hb.hasPassword;
+          if (f === 'locked') return !!hb.hasPassword;
+          return true; // 'all'
+        });
+
+        // Update count badge
+        if (countBadge) {
+          countBadge.textContent = `Menampilkan ${filtered.length} dari ${catalogState.allHandbooks.length} handbook`;
+        }
+
+        // Clear existing cards
+        grid.querySelectorAll('.hb-catalog-card').forEach(el => el.remove());
+
+        if (filtered.length === 0) {
+          if (emptyEl) {
+            emptyEl.style.display = 'flex';
+            if (catalogState.allHandbooks.length > 0) {
+              emptyEl.querySelector('h3').textContent = 'Tidak Ada Handbook Sesuai';
+              emptyEl.querySelector('p').textContent = 'Tidak ditemukan handbook dengan filter atau kata kunci tersebut. Coba ganti kata pencarian.';
+            } else {
+              emptyEl.querySelector('h3').textContent = 'Belum Ada Handbook';
+              emptyEl.querySelector('p').textContent = 'Administrator belum mempublikasikan handbook.';
+            }
+          }
+          return;
+        }
+
+        if (emptyEl) emptyEl.style.display = 'none';
+        filtered.forEach(hb => renderHandbookCard(grid, hb));
+      }
+
+      function setupCatalogControls() {
+        const searchInput = document.getElementById('catalog-search-input');
+        const searchClear = document.getElementById('catalog-search-clear');
+        const chips = document.querySelectorAll('.catalog-filter-chips .filter-chip');
+
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            catalogState.searchQuery = e.target.value;
+            if (searchClear) {
+              searchClear.style.display = catalogState.searchQuery ? 'block' : 'none';
+            }
+            renderFilteredCatalog();
+          });
+        }
+
+        if (searchClear) {
+          searchClear.addEventListener('click', () => {
+            if (searchInput) {
+              searchInput.value = '';
+              searchInput.focus();
+            }
+            catalogState.searchQuery = '';
+            searchClear.style.display = 'none';
+            renderFilteredCatalog();
+          });
+        }
+
+        chips.forEach(chip => {
+          chip.addEventListener('click', () => {
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            catalogState.activeFilter = chip.dataset.filter || 'all';
+            renderFilteredCatalog();
+          });
+        });
       }
 
       function renderHandbookCard(grid, hb) {
@@ -1050,6 +1484,7 @@
         const color = hb.coverColor || '#1e293b';
         const pageCount = hb.pageCount || 0;
         const hasPassword = hb.hasPassword;
+        const isLandscape = hb.orientation === 'landscape';
 
         const card = document.createElement('a');
         card.href = `/read.html?id=${slug}`;
@@ -1057,37 +1492,71 @@
         card.title = hb.title;
 
         const lockBadgeHtml = hasPassword ? `
-          <div class="hb-card-lock-badge">
+          <span class="hb-badge-pill hb-badge-lock">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
-            Butuh PIN
-          </div>` : '';
+            PIN
+          </span>` : '';
 
-        const pageCountBadge = pageCount > 0 ? `<div class="hb-card-page-count">${pageCount} Halaman</div>` : '';
+        const orientBadgeHtml = `
+          <span class="hb-badge-pill hb-badge-orient">
+            ${isLandscape ? 'Lanskap 16:9' : 'Buku Tegak'}
+          </span>`;
+
+        const pageCountBadge = pageCount > 0 ? `
+          <span class="hb-badge-pill">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+              <path d="M6 2v20"/>
+            </svg>
+            ${pageCount} Hal
+          </span>` : '';
+
+        const coverContentHtml = hb.coverImage ? `
+          <img src="${hb.coverImage}" alt="${escapeHtml(hb.title || 'Handbook')}" class="hb-card-cover-img" loading="lazy" />
+          <div class="hb-card-spine"></div>
+          <div class="hb-card-spine-line"></div>
+          <div class="hb-card-badges-top">
+            ${lockBadgeHtml}
+            ${orientBadgeHtml}
+          </div>
+          <div class="hb-card-badges-bottom">
+            ${pageCountBadge}
+          </div>
+        ` : `
+          <div class="hb-card-spine"></div>
+          <div class="hb-card-spine-line"></div>
+          <svg class="hb-card-cover-icon" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+            <path d="M6 2v20"/>
+            <line x1="10" y1="8" x2="17" y2="8"/>
+            <line x1="10" y1="12" x2="17" y2="12"/>
+            <line x1="10" y1="16" x2="15" y2="16"/>
+          </svg>
+          <div class="hb-card-badges-top">
+            ${lockBadgeHtml}
+            ${orientBadgeHtml}
+          </div>
+          <div class="hb-card-badges-bottom">
+            ${pageCountBadge}
+          </div>
+        `;
 
         card.innerHTML = `
           <div class="hb-card-cover" style="background: linear-gradient(135deg, ${color}, ${adjustColor(color, -30)});">
-            <svg class="hb-card-cover-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-              <path d="M6 2v20"/>
-              <line x1="10" y1="8" x2="17" y2="8"/>
-              <line x1="10" y1="12" x2="17" y2="12"/>
-              <line x1="10" y1="16" x2="15" y2="16"/>
-            </svg>
-            ${lockBadgeHtml}
-            ${pageCountBadge}
+            ${coverContentHtml}
           </div>
           <div class="hb-card-info">
             <h3 class="hb-card-title">${escapeHtml(hb.title || 'Untitled')}</h3>
             ${hb.subtitle ? `<p class="hb-card-subtitle">${escapeHtml(hb.subtitle)}</p>` : ''}
             <div class="hb-card-cta">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              <span>${hasPassword ? 'Buka dengan PIN' : 'Buka Flipbook'}</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
               </svg>
-              ${hasPassword ? 'Buka dengan PIN' : 'Baca Sekarang'}
             </div>
           </div>
         `;
@@ -1113,7 +1582,8 @@
         } catch (e) { return hex; }
       }
 
-      // Load catalog on page load
+      // Initialize Catalog
+      setupCatalogControls();
       loadCatalog();
     </script>
   </body>
