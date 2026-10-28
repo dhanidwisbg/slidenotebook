@@ -52,9 +52,6 @@ export default async function handler(req, res) {
     orientation: handbook.orientation,
     coverColor: handbook.coverColor,
     pages: handbook.pages,
-    audioUrl: handbook.audioUrl,
-    autoplay: handbook.autoplay,
-    initialVolume: handbook.initialVolume,
     updatedAt: handbook.updatedAt
   });
 }

@@ -8,8 +8,6 @@ import {
   saveHandbookMeta,
   getPages,
   savePages,
-  getMedia,
-  saveMedia,
   clearAll
 } from './db.js';
 import {
@@ -18,7 +16,6 @@ import {
   checkOrientationMismatch
 } from './compressor.js';
 import { convertPdfToPages } from './pdf-loader.js';
-import { bgm } from './sound.js';
 import { FlipbookManager } from './flipbook-manager.js';
 import { generateSamplePages } from './sample-data.js';
 
@@ -32,7 +29,6 @@ const state = {
     subtitle: 'Panduan Operasional Tim Digital 2026',
     orientation: 'portrait', // 'portrait' | 'landscape'
     coverColor: '#1e293b',
-    bgmPreset: 'lofi',
     soundEnabled: true,
     ambient: 'studio'
   },
@@ -54,9 +50,6 @@ const DOM = {
   btnOrientLandscape: document.getElementById('btn-orient-landscape'),
   swatchesContainer: document.getElementById('cover-color-swatches'),
   customColorPicker: document.getElementById('custom-color-picker'),
-  bgmSelect: document.getElementById('bgm-select'),
-  btnUploadAudio: document.getElementById('btn-upload-audio'),
-  audioFileInput: document.getElementById('audio-file-input'),
   uploadZone: document.getElementById('upload-zone'),
   fileUploadInput: document.getElementById('file-upload-input'),
   btnAddMoreSlides: document.getElementById('btn-add-more-slides'),
@@ -80,8 +73,6 @@ const DOM = {
   pageIndicator: document.getElementById('page-indicator'),
   btnToggleToc: document.getElementById('btn-toggle-toc'),
   btnToggleSound: document.getElementById('btn-toggle-sound'),
-  btnToggleBgm: document.getElementById('btn-toggle-bgm'),
-  bgmVolumeSlider: document.getElementById('bgm-volume-slider'),
   btnToggleFullscreen: document.getElementById('btn-toggle-fullscreen'),
   btnDockEdit: document.getElementById('btn-dock-edit'),
   thumbnailDrawer: document.getElementById('thumbnail-drawer'),
@@ -113,12 +104,6 @@ async function initApp() {
     await saveHandbookMeta(state.handbook);
   }
 
-  // Load saved audio media if any
-  const savedMedia = await getMedia('default');
-  if (savedMedia && savedMedia.audioBlob) {
-    bgm.setCustomAudio(savedMedia.audioBlob);
-  }
-
   // Setup Flipbook Manager instance
   state.flipbookManager = new FlipbookManager(DOM.flipbookContainer, DOM.bookBase, {
     orientation: state.handbook.orientation,
@@ -132,11 +117,6 @@ async function initApp() {
   renderPagesGrid();
   checkOrientationAlert();
   setupEventListeners();
-
-  // Initialize BGM preset
-  if (state.handbook.bgmPreset && state.handbook.bgmPreset !== 'custom') {
-    bgm.loadPreset(state.handbook.bgmPreset);
-  }
 
   showToast('Handbook siap digunakan! Klik "Buka di Mode Baca" untuk membaca.');
 }
@@ -165,10 +145,6 @@ function syncMetaToInputs() {
   if (state.flipbookManager) {
     state.flipbookManager.setCoverColor(state.handbook.coverColor);
   }
-
-  // BGM Select
-  DOM.bgmSelect.value = state.handbook.bgmPreset || 'lofi';
-  DOM.btnUploadAudio.style.display = state.handbook.bgmPreset === 'custom' ? 'inline-flex' : 'none';
 
   // Ambient Environment
   document.body.dataset.ambient = state.handbook.ambient || 'studio';
@@ -412,11 +388,6 @@ async function switchMode(mode) {
     DOM.editView.style.display = 'none';
     DOM.readerView.style.display = 'flex';
 
-    // Start background music on entering reader
-    if (state.handbook.bgmPreset && state.handbook.bgmPreset !== 'none') {
-      bgm.play();
-    }
-
     // Load flipbook pages
     await state.flipbookManager.loadBook(
       state.pages,
@@ -646,45 +617,6 @@ function setupEventListeners() {
     await saveHandbookMeta(state.handbook);
   });
 
-  // Background Music selector (FR-11)
-  DOM.bgmSelect.addEventListener('change', async (e) => {
-    const val = e.target.value;
-    state.handbook.bgmPreset = val;
-    DOM.btnUploadAudio.style.display = val === 'custom' ? 'inline-flex' : 'none';
-
-    if (val === 'custom') {
-      DOM.audioFileInput.click();
-    } else {
-      bgm.loadPreset(val);
-    }
-    await saveHandbookMeta(state.handbook);
-  });
-
-  DOM.btnUploadAudio.addEventListener('click', () => DOM.audioFileInput.click());
-
-  DOM.audioFileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (file.size > 12 * 1024 * 1024) {
-      alert('Ukuran file audio melebihi batas maksimal 12 MB.');
-      return;
-    }
-
-    showToast(`Mengunggah musik: ${file.name}`);
-    bgm.setCustomAudio(file);
-    state.handbook.bgmPreset = 'custom';
-    DOM.bgmSelect.value = 'custom';
-
-    await saveMedia('default', {
-      audioBlob: file,
-      audioName: file.name,
-      audioSize: file.size
-    });
-    await saveHandbookMeta(state.handbook);
-    showToast('Musik latar berhasil disimpan.');
-  });
-
   // Drag & drop upload zone
   DOM.uploadZone.addEventListener('click', () => DOM.fileUploadInput.click());
   DOM.btnAddMoreSlides.addEventListener('click', () => DOM.fileUploadInput.click());
@@ -721,16 +653,6 @@ function setupEventListeners() {
     state.flipbookManager.setSoundEnabled(state.handbook.soundEnabled);
     DOM.btnToggleSound.classList.toggle('active', state.handbook.soundEnabled);
     showToast(state.handbook.soundEnabled ? 'Suara kertas diaktifkan' : 'Suara kertas dimatikan');
-  });
-
-  // BGM Toggle & Volume (FR-11)
-  DOM.btnToggleBgm.addEventListener('click', () => {
-    const isPlaying = bgm.toggle();
-    DOM.btnToggleBgm.classList.toggle('active', isPlaying);
-  });
-
-  DOM.bgmVolumeSlider.addEventListener('input', (e) => {
-    bgm.setVolume(parseFloat(e.target.value));
   });
 
   // Reader Ambient environment
@@ -785,8 +707,6 @@ function setupEventListeners() {
       state.flipbookManager.prev();
     } else if (e.key === 'f' || e.key === 'F') {
       DOM.btnToggleFullscreen.click();
-    } else if (e.key === 'm' || e.key === 'M') {
-      DOM.btnToggleBgm.click();
     } else if (e.key === 'Escape') {
       closeThumbnailDrawer();
     }

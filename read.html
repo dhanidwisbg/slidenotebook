@@ -155,24 +155,6 @@
             </svg>
           </button>
 
-          <!-- BGM Control with Volume Slider (if admin added audio) -->
-          <div class="audio-dock-group" id="reader-audio-group" style="display: none;">
-            <button class="dock-btn" id="btn-toggle-bgm" title="Musik Latar (Play / Pause) (M)" aria-label="Musik Latar (Play / Pause)">
-              <div class="audio-waves" id="audio-waves">
-                <span></span><span></span><span></span>
-              </div>
-              <svg id="audio-note-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 18V5l12-2v13"></path>
-                <circle cx="6" cy="18" r="3"></circle>
-                <circle cx="18" cy="16" r="3"></circle>
-              </svg>
-            </button>
-            <div class="volume-slider-popup">
-              <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">Volume Musik</span>
-              <input type="range" id="bgm-volume-slider" class="slider-input" min="0" max="1" step="0.05" value="0.45" />
-            </div>
-          </div>
-
           <!-- Fullscreen Toggle -->
           <button class="dock-btn" id="btn-toggle-fullscreen" title="Layar Penuh (F)" aria-label="Layar Penuh">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -238,10 +220,6 @@
             <div class="shortcut-row">
               <span class="shortcut-desc">Layar Penuh (Fullscreen)</span>
               <div class="shortcut-keys"><kbd>F</kbd></div>
-            </div>
-            <div class="shortcut-row">
-              <span class="shortcut-desc">Musik Latar (Play / Pause)</span>
-              <div class="shortcut-keys"><kbd>M</kbd></div>
             </div>
             <div class="shortcut-row">
               <span class="shortcut-desc">Efek Suara Balik Kertas</span>

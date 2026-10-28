@@ -9,7 +9,6 @@ import {
   fetchAdminHandbook,
   createAdminHandbook,
   updateAdminHandbook,
-  uploadAdminAudio,
   uploadPageImageToBlob,
   convertAdminPptx,
   deleteAdminHandbook
@@ -33,8 +32,7 @@ const adminState = {
   user: null,
   handbook: null,         // active handbook object from server
   handbooks: [],          // all handbooks list (summaries)
-  draggedCardIndex: null,
-  testAudioEl: new Audio()
+  draggedCardIndex: null
 };
 
 // DOM references
@@ -57,15 +55,6 @@ const DOM = {
   swatches: document.getElementById('admin-color-swatches'),
   customColor: document.getElementById('admin-custom-color'),
 
-  // Audio
-  btnTriggerAudioUpload: document.getElementById('btn-trigger-audio-upload'),
-  adminAudioInput: document.getElementById('admin-audio-input'),
-  audioFileStatus: document.getElementById('audio-file-status'),
-  btnTestAudioPlay: document.getElementById('btn-test-audio-play'),
-  btnRemoveAudio: document.getElementById('btn-remove-audio'),
-  chkAudioAutoplay: document.getElementById('chk-audio-autoplay'),
-  adminAudioVolume: document.getElementById('admin-audio-volume'),
-  volumeValLabel: document.getElementById('volume-val-label'),
 
   // Upload Zone
   uploadZone: document.getElementById('admin-upload-zone'),
@@ -136,7 +125,7 @@ const DOM = {
 // ============================================================================
 // UPLOAD LOADING CARD & SUCCESS NOTIFICATION HELPERS
 // ============================================================================
-function showLoadingCard({ title, subtitle, filename, percent = 0, step = 'Menyiapkan berkas...', isAudio = false }) {
+function showLoadingCard({ title, subtitle, filename, percent = 0, step = 'Menyiapkan berkas...' }) {
   if (!DOM.uploadLoadingModal) return;
 
   DOM.loadingCardTitle.textContent = title;
@@ -146,25 +135,7 @@ function showLoadingCard({ title, subtitle, filename, percent = 0, step = 'Menyi
   DOM.loadingCardPercent.textContent = `${Math.round(percent)}%`;
   DOM.loadingCardStep.textContent = step;
 
-  if (DOM.loadingIconCore) {
-    if (isAudio) {
-      DOM.loadingIconCore.innerHTML = `
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 18V5l12-2v13"></path>
-          <circle cx="6" cy="18" r="3"></circle>
-          <circle cx="18" cy="16" r="3"></circle>
-        </svg>
-      `;
-    } else {
-      DOM.loadingIconCore.innerHTML = `
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="17 8 12 3 7 8"></polyline>
-          <line x1="12" y1="3" x2="12" y2="15"></line>
-        </svg>
-      `;
-    }
-  }
+  if (DOM.loadingIconCore) {  }
 
   DOM.uploadLoadingModal.style.display = 'flex';
 }
@@ -293,9 +264,6 @@ async function loadHandbookList() {
         orientation: 'portrait',
         coverColor: '#1e293b',
         pages: initialPages,
-        audioUrl: null,
-        autoplay: true,
-        initialVolume: 0.45,
         isPublished: true,
         isActive: true,
         readerPassword: null
@@ -388,9 +356,6 @@ function renderHandbookList() {
                 orientation: snapshot.orientation,
                 coverColor: snapshot.coverColor,
                 pages: snapshot.pages || [],
-                audioUrl: snapshot.audioUrl,
-                autoplay: snapshot.autoplay,
-                initialVolume: snapshot.initialVolume,
                 readerPassword: snapshot.readerPassword || null
               });
               await loadHandbookList();
@@ -433,9 +398,6 @@ async function createNewHandbook() {
       orientation: 'portrait',
       coverColor: '#1e293b',
       pages: [],
-      audioUrl: null,
-      autoplay: true,
-      initialVolume: 0.45,
       isPublished: true,
       isActive: true,
       readerPassword: null
@@ -472,24 +434,6 @@ function syncHandbookToUI() {
   DOM.swatches.querySelectorAll('.color-dot').forEach((dot) => {
     dot.classList.toggle('active', dot.dataset.color === hb.coverColor);
   });
-
-  // Audio settings
-  if (hb.audioUrl) {
-    DOM.audioFileStatus.textContent = 'Audio terpasang';
-    DOM.audioFileStatus.style.color = 'var(--accent-success)';
-    DOM.btnTestAudioPlay.style.display = 'flex';
-    DOM.btnRemoveAudio.style.display = 'flex';
-    adminState.testAudioEl.src = hb.audioUrl;
-  } else {
-    DOM.audioFileStatus.textContent = 'Belum ada musik';
-    DOM.audioFileStatus.style.color = 'var(--text-muted)';
-    DOM.btnTestAudioPlay.style.display = 'none';
-    DOM.btnRemoveAudio.style.display = 'none';
-  }
-
-  DOM.chkAudioAutoplay.checked = hb.autoplay !== false;
-  DOM.adminAudioVolume.value = typeof hb.initialVolume === 'number' ? hb.initialVolume : 0.45;
-  DOM.volumeValLabel.textContent = `${Math.round(DOM.adminAudioVolume.value * 100)}%`;
 
   DOM.pageCount.textContent = `${(hb.pages || []).length} Halaman`;
 }
@@ -677,7 +621,6 @@ async function handleFilesUpload(files) {
     filename: fileSummary,
     percent: 8,
     step: 'Menganalisis berkas yang dipilih...',
-    isAudio: false
   });
 
   try {
@@ -980,110 +923,6 @@ function setupEventListeners() {
   DOM.customColor.addEventListener('input', async (e) => {
     adminState.handbook.coverColor = e.target.value;
     syncHandbookToUI();
-    await autoSaveHandbook();
-  });
-
-  // Audio Upload & Controls
-  DOM.btnTriggerAudioUpload.addEventListener('click', () => DOM.adminAudioInput.click());
-  DOM.adminAudioInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (file.size > 25 * 1024 * 1024) {
-      alert('Ukuran file audio melebihi batas maksimal 25 MB.');
-      e.target.value = '';
-      return;
-    }
-
-    const fileSizeMb = (file.size / (1024 * 1024)).toFixed(2);
-    showLoadingCard({
-      title: 'Mengunggah Musik Latar',
-      subtitle: 'Berkas audio sedang diunggah dan dihubungkan ke flipbook...',
-      filename: `${file.name} (${fileSizeMb} MB)`,
-      percent: 15,
-      step: 'Menghubungkan ke cloud storage...',
-      isAudio: true
-    });
-
-    try {
-      const uploadRes = await uploadAdminAudio(file, (pct) => {
-        updateLoadingCard({
-          percent: Math.min(94, Math.max(15, pct)),
-          step: `Mengunggah berkas musik (${pct}%)...`
-        });
-      });
-
-      updateLoadingCard({
-        percent: 96,
-        step: 'Menyimpan konfigurasi musik ke database...'
-      });
-
-      adminState.handbook.audioUrl = uploadRes.audioUrl;
-      adminState.testAudioEl.src = uploadRes.audioUrl;
-      await autoSaveHandbook();
-      syncHandbookToUI();
-
-      updateLoadingCard({
-        percent: 100,
-        step: 'Musik berhasil dipasang!'
-      });
-
-      setTimeout(() => {
-        showSuccessModal({
-          title: 'Musik Latar Berhasil Ditambahkan!',
-          message: `Berkas audio "${file.name}" berhasil diunggah dan disimpan ke server.`,
-          detailText: 'Musik akan diputar secara otomatis saat pembaca membuka buku atau membalik halaman.'
-        });
-      }, 350);
-
-    } catch (err) {
-      hideLoadingCard();
-      console.error('Audio upload failed:', err);
-      alert(`Gagal mengunggah musik: ${err.message}`);
-    } finally {
-      e.target.value = '';
-    }
-  });
-
-  DOM.btnTestAudioPlay.addEventListener('click', () => {
-    if (adminState.testAudioEl.paused) {
-      adminState.testAudioEl.volume = parseFloat(DOM.adminAudioVolume.value);
-      adminState.testAudioEl.play().then(() => {
-        DOM.btnTestAudioPlay.textContent = '⏸';
-      }).catch((err) => {
-        alert('Gagal memutar audio: ' + err.message);
-      });
-    } else {
-      adminState.testAudioEl.pause();
-      DOM.btnTestAudioPlay.textContent = '▶';
-    }
-  });
-
-  adminState.testAudioEl.addEventListener('ended', () => {
-    DOM.btnTestAudioPlay.textContent = '▶';
-  });
-
-  DOM.btnRemoveAudio.addEventListener('click', async () => {
-    if (confirm('Hapus musik latar ini?')) {
-      adminState.testAudioEl.pause();
-      DOM.btnTestAudioPlay.textContent = '▶';
-      adminState.handbook.audioUrl = null;
-      await autoSaveHandbook();
-      syncHandbookToUI();
-      showToast('Musik latar dihapus.');
-    }
-  });
-
-  DOM.chkAudioAutoplay.addEventListener('change', async (e) => {
-    adminState.handbook.autoplay = e.target.checked;
-    await autoSaveHandbook();
-  });
-
-  DOM.adminAudioVolume.addEventListener('input', async (e) => {
-    const val = parseFloat(e.target.value);
-    DOM.volumeValLabel.textContent = `${Math.round(val * 100)}%`;
-    adminState.handbook.initialVolume = val;
-    adminState.testAudioEl.volume = val;
     await autoSaveHandbook();
   });
 

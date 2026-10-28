@@ -12,8 +12,6 @@ const readerState = {
   password: null,
   flipbookManager: null,
   soundEnabled: true,
-  audioElement: new Audio(),
-  audioPlaying: false,
   hasTouchedFirstTime: false,
   zoomLevel: 1.0,
   autoPlay: false,
@@ -53,9 +51,6 @@ const DOM = {
   pageIndicator: document.getElementById('page-indicator'),
   btnToggleToc: document.getElementById('btn-toggle-toc'),
   btnToggleSound: document.getElementById('btn-toggle-sound'),
-  readerAudioGroup: document.getElementById('reader-audio-group'),
-  btnToggleBgm: document.getElementById('btn-toggle-bgm'),
-  bgmVolumeSlider: document.getElementById('bgm-volume-slider'),
   btnToggleFullscreen: document.getElementById('btn-toggle-fullscreen'),
   thumbnailDrawer: document.getElementById('thumbnail-drawer'),
   btnCloseDrawer: document.getElementById('btn-close-drawer'),
@@ -157,23 +152,6 @@ function renderBook() {
     DOM.readerOrientBadge.textContent = hb.orientation === 'landscape' ? 'Lanskap 16:9' : 'Buku Tegak';
   }
 
-  // Setup BGM if provided by admin
-  if (hb.audioUrl) {
-    DOM.readerAudioGroup.style.display = 'flex';
-    readerState.audioElement.src = hb.audioUrl;
-    readerState.audioElement.loop = true;
-    const initialVol = typeof hb.initialVolume === 'number' ? hb.initialVolume : 0.45;
-    readerState.audioElement.volume = initialVol;
-    DOM.bgmVolumeSlider.value = initialVol;
-
-    // Trigger autoplay if enabled
-    if (hb.autoplay !== false) {
-      startBgmPlayback();
-    }
-  } else {
-    DOM.readerAudioGroup.style.display = 'none';
-  }
-
   // Reset zoom & progress
   setZoom(1.0);
   if (DOM.readerProgressBar) {
@@ -214,11 +192,6 @@ function handlePageChange({ pageIndex, totalPages, isCover, isBackCover }) {
   // If auto-play active, reset timer to give full 5s on new page
   if (readerState.autoPlay) {
     startAutoPlay();
-  }
-
-  // Turn-page is an explicit user gesture - start BGM if waiting for interaction!
-  if (!readerState.audioPlaying && readerState.handbook?.audioUrl && readerState.handbook.autoplay !== false) {
-    startBgmPlayback();
   }
 
   // Confetti on finishing the book (cek prefers-reduced-motion)
@@ -273,9 +246,6 @@ function renderThumbnailsDrawer() {
     thumbItem.addEventListener('click', () => {
       readerState.flipbookManager.goToPage(index);
       DOM.thumbnailDrawer.classList.remove('open');
-      if (!readerState.audioPlaying && readerState.handbook?.audioUrl && readerState.handbook.autoplay !== false) {
-        startBgmPlayback();
-      }
     });
 
     DOM.drawerThumbnailsTrack.appendChild(thumbItem);
@@ -286,50 +256,6 @@ function highlightActiveThumbnail(pageIndex) {
   DOM.drawerThumbnailsTrack.querySelectorAll('.thumb-item').forEach((item) => {
     item.classList.toggle('active', parseInt(item.dataset.page, 10) === pageIndex);
   });
-}
-
-// ============================================================================
-// AUDIO AUTOPLAY & INTERACTION UNLOCK
-// ============================================================================
-function startBgmPlayback() {
-  if (!readerState.handbook?.audioUrl || readerState.audioPlaying) return;
-
-  readerState.audioElement.play().then(() => {
-    readerState.audioPlaying = true;
-    DOM.btnToggleBgm?.classList.add('active');
-  }).catch((err) => {
-    console.log('[Reader BGM] Autoplay deferred until user gesture:', err.message);
-    setupFirstTouchAutoplay();
-  });
-}
-
-function setupFirstTouchAutoplay() {
-  const triggerAudioOnFirstInteraction = () => {
-    if (readerState.audioPlaying || !readerState.handbook?.audioUrl) {
-      cleanListeners();
-      return;
-    }
-
-    if (readerState.handbook.autoplay !== false) {
-      readerState.audioElement.play().then(() => {
-        readerState.audioPlaying = true;
-        DOM.btnToggleBgm?.classList.add('active');
-        cleanListeners();
-      }).catch(() => {});
-    }
-  };
-
-  const cleanListeners = () => {
-    window.removeEventListener('click', triggerAudioOnFirstInteraction);
-    window.removeEventListener('keydown', triggerAudioOnFirstInteraction);
-    window.removeEventListener('touchstart', triggerAudioOnFirstInteraction);
-    window.removeEventListener('pointerdown', triggerAudioOnFirstInteraction);
-  };
-
-  window.addEventListener('click', triggerAudioOnFirstInteraction, { passive: true });
-  window.addEventListener('keydown', triggerAudioOnFirstInteraction, { passive: true });
-  window.addEventListener('touchstart', triggerAudioOnFirstInteraction, { passive: true });
-  window.addEventListener('pointerdown', triggerAudioOnFirstInteraction, { passive: true });
 }
 
 function showError(title, message) {
@@ -404,18 +330,8 @@ function stopAutoPlay() {
 // ============================================================================
 function setupEventListeners() {
   // Navigation
-  DOM.btnPrevPage.addEventListener('click', () => {
-    readerState.flipbookManager?.prev();
-    if (!readerState.audioPlaying && readerState.handbook?.audioUrl && readerState.handbook.autoplay !== false) {
-      startBgmPlayback();
-    }
-  });
-  DOM.btnNextPage.addEventListener('click', () => {
-    readerState.flipbookManager?.next();
-    if (!readerState.audioPlaying && readerState.handbook?.audioUrl && readerState.handbook.autoplay !== false) {
-      startBgmPlayback();
-    }
-  });
+  DOM.btnPrevPage.addEventListener('click', () => readerState.flipbookManager?.prev());
+  DOM.btnNextPage.addEventListener('click', () => readerState.flipbookManager?.next());
 
   // TOC Drawer
   DOM.btnToggleToc.addEventListener('click', () => DOM.thumbnailDrawer.classList.toggle('open'));
@@ -522,43 +438,6 @@ function setupEventListeners() {
     });
   });
 
-  // BGM Audio Element events
-  readerState.audioElement.addEventListener('play', () => {
-    readerState.audioPlaying = true;
-    DOM.btnToggleBgm?.classList.add('active');
-  });
-
-  readerState.audioElement.addEventListener('pause', () => {
-    readerState.audioPlaying = false;
-    DOM.btnToggleBgm?.classList.remove('active');
-  });
-
-  readerState.audioElement.addEventListener('ended', () => {
-    readerState.audioPlaying = false;
-    DOM.btnToggleBgm?.classList.remove('active');
-  });
-
-  readerState.audioElement.addEventListener('error', (e) => {
-    console.error('[Reader BGM] Audio element error:', e);
-    readerState.audioPlaying = false;
-    DOM.btnToggleBgm?.classList.remove('active');
-  });
-
-  // BGM Toggle Button
-  DOM.btnToggleBgm.addEventListener('click', () => {
-    if (readerState.audioPlaying) {
-      readerState.audioElement.pause();
-    } else {
-      readerState.audioElement.play().catch((err) => {
-        console.warn('[Reader BGM] Manual play error:', err);
-      });
-    }
-  });
-
-  DOM.bgmVolumeSlider.addEventListener('input', (e) => {
-    readerState.audioElement.volume = parseFloat(e.target.value);
-  });
-
   // Fullscreen
   DOM.btnToggleFullscreen.addEventListener('click', () => {
     if (!document.fullscreenElement) {
@@ -634,8 +513,6 @@ function setupEventListeners() {
       readerState.flipbookManager?.prev();
     } else if (e.key === 'f' || e.key === 'F') {
       DOM.btnToggleFullscreen?.click();
-    } else if (e.key === 'm' || e.key === 'M') {
-      DOM.btnToggleBgm?.click();
     } else if (e.key === 's' || e.key === 'S') {
       DOM.btnToggleSound?.click();
     } else if (e.key === 'p' || e.key === 'P') {

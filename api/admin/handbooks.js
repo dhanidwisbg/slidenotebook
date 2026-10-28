@@ -37,7 +37,7 @@ export default async function handler(req, res) {
   // POST - create new handbook
   if (req.method === 'POST') {
     const body = req.body || {};
-    const { title, subtitle, orientation, coverColor, pages, audioUrl, autoplay, initialVolume, readerPassword } = body;
+    const { title, subtitle, orientation, coverColor, pages, readerPassword } = body;
     const list = await readHandbooksDB();
 
     const id = 'hb_' + Date.now();
@@ -55,9 +55,6 @@ export default async function handler(req, res) {
       orientation: orientation || 'portrait',
       coverColor: coverColor || '#1e293b',
       pages: storedPages,
-      audioUrl: audioUrl || null,
-      autoplay: autoplay !== false,
-      initialVolume: typeof initialVolume === 'number' ? initialVolume : 0.45,
       isPublished: true,
       isActive: true,
       readerPassword: readerPassword || null,

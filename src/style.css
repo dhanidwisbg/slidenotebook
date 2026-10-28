@@ -402,13 +402,6 @@ button, input, select, textarea {
   overflow: hidden;
 }
 
-/* BGM Setting Controls (FR-11) */
-.bgm-setting-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
 .select-custom {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -965,33 +958,6 @@ button, input, select, textarea {
   height: 20px;
   background: var(--border-color);
   margin: 0 0.2rem;
-}
-
-/* Audio Dock Item with Volume Popup */
-.audio-dock-group {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.volume-slider-popup {
-  position: absolute;
-  bottom: 120%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 0.75rem 1rem;
-  display: none;
-  flex-direction: column;
-  gap: 0.5rem;
-  box-shadow: var(--shadow-lg);
-  width: 150px;
-}
-
-.audio-dock-group:hover .volume-slider-popup {
-  display: flex;
 }
 
 .slider-input {

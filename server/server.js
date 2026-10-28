@@ -28,9 +28,8 @@ const PORT = process.env.PORT || 3001;
 // Ensure storage directories exist
 const DATA_DIR = path.join(__dirname, 'data');
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
-const AUDIO_UPLOADS_DIR = path.join(UPLOADS_DIR, 'audio');
 
-[DATA_DIR, UPLOADS_DIR, AUDIO_UPLOADS_DIR].forEach((dir) => {
+[DATA_DIR, UPLOADS_DIR].forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -192,65 +191,6 @@ app.get('/api/auth/me', (req, res) => {
 });
 
 // ============================================================================
-// AUDIO UPLOAD (Admin Only - Max 12 MB)
-// ============================================================================
-const audioStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, AUDIO_UPLOADS_DIR),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `audio-${uniqueSuffix}${ext}`);
-  }
-});
-
-const audioUpload = multer({
-  storage: audioStorage,
-  limits: { fileSize: 12 * 1024 * 1024 }, // 12 MB limit
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('audio/') || /\.(mp3|wav|ogg|aac|m4a)$/i.test(file.originalname)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Format file audio tidak valid. Harap unggah MP3, WAV, OGG, atau M4A.'));
-    }
-  }
-});
-
-app.post('/api/admin/upload-audio', requireAdminAuth, (req, res) => {
-  audioUpload.single('audio')(req, res, async (err) => {
-    if (err) {
-      return res.status(400).json({ error: err.message || 'Gagal mengunggah file audio.' });
-    }
-    if (!req.file) {
-      return res.status(400).json({ error: 'Tidak ada file audio yang diunggah.' });
-    }
-
-    let audioUrl = `/uploads/audio/${req.file.filename}`;
-
-    // Upload to Vercel Blob if active
-    if (BLOB_TOKEN) {
-      try {
-        const fileBuffer = fs.readFileSync(req.file.path);
-        const blob = await put(`audio/${Date.now()}-${req.file.originalname}`, fileBuffer, {
-          access: 'public',
-          token: BLOB_TOKEN
-        });
-        audioUrl = blob.url;
-        // Clean up temporary local upload
-        try { fs.unlinkSync(req.file.path); } catch (e) {}
-      } catch (blobErr) {
-        console.warn('[Storage] Vercel Blob audio upload failed, using local file:', blobErr.message);
-      }
-    }
-
-    res.json({
-      success: true,
-      audioUrl,
-      fileName: req.file.originalname,
-      fileSize: req.file.size
-    });
-  });
-});
-
 // ============================================================================
 // SINGLE IMAGE UPLOAD (Admin Only - Per-page upload to Vercel Blob)
 // Called one image at a time from client to stay under serverless size limits
@@ -428,7 +368,7 @@ app.get('/api/admin/handbooks/:id', requireAdminAuth, (req, res) => {
 
 // POST /api/admin/handbooks - Create new handbook
 app.post('/api/admin/handbooks', requireAdminAuth, async (req, res) => {
-  const { title, subtitle, orientation, coverColor, pages, audioUrl, autoplay, initialVolume, readerPassword } = req.body;
+  const { title, subtitle, orientation, coverColor, pages, readerPassword } = req.body;
   const list = getHandbooks();
 
   const id = 'hb_' + Date.now();
@@ -447,9 +387,6 @@ app.post('/api/admin/handbooks', requireAdminAuth, async (req, res) => {
     orientation: orientation || 'portrait',
     coverColor: coverColor || '#1e293b',
     pages: storedPages,
-    audioUrl: audioUrl || null,
-    autoplay: autoplay !== false,
-    initialVolume: typeof initialVolume === 'number' ? initialVolume : 0.45,
     isPublished: true,
     isActive: true,
     readerPassword: readerPassword || null,
@@ -479,9 +416,6 @@ app.put('/api/admin/handbooks/:id', requireAdminAuth, async (req, res) => {
     orientation,
     coverColor,
     pages,
-    audioUrl,
-    autoplay,
-    initialVolume,
     isPublished,
     isActive,
     readerPassword,
@@ -502,9 +436,6 @@ app.put('/api/admin/handbooks/:id', requireAdminAuth, async (req, res) => {
     orientation: orientation !== undefined ? orientation : existing.orientation,
     coverColor: coverColor !== undefined ? coverColor : existing.coverColor,
     pages: storedPages,
-    audioUrl: audioUrl !== undefined ? audioUrl : existing.audioUrl,
-    autoplay: autoplay !== undefined ? autoplay : existing.autoplay,
-    initialVolume: initialVolume !== undefined ? initialVolume : existing.initialVolume,
     isPublished: isPublished !== undefined ? isPublished : existing.isPublished,
     isActive: isActive !== undefined ? isActive : existing.isActive,
     readerPassword: readerPassword !== undefined ? readerPassword : existing.readerPassword,
@@ -531,9 +462,6 @@ app.delete('/api/admin/handbooks/:id', requireAdminAuth, async (req, res) => {
     const blobUrls = found.pages
       .map((p) => p.imageUrl)
       .filter((u) => u && u.includes('blob.vercel-storage.com'));
-    if (found.audioUrl && found.audioUrl.includes('blob.vercel-storage.com')) {
-      blobUrls.push(found.audioUrl);
-    }
     if (blobUrls.length > 0) {
       del(blobUrls, { token: BLOB_TOKEN }).catch((e) =>
         console.warn('[Storage] Blob delete cleanup warning:', e.message)
@@ -659,9 +587,6 @@ app.get('/api/public/handbook/:id', (req, res) => {
     orientation: handbook.orientation,
     coverColor: handbook.coverColor,
     pages: handbook.pages,
-    audioUrl: handbook.audioUrl,
-    autoplay: handbook.autoplay,
-    initialVolume: handbook.initialVolume,
     updatedAt: handbook.updatedAt
   });
 });

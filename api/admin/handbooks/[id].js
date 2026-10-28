@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   if (req.method === 'PUT') {
     if (!found) return res.status(404).json({ error: 'Handbook tidak ditemukan.' });
     const body = req.body || {};
-    const { title, subtitle, orientation, coverColor, pages, audioUrl, autoplay, initialVolume, isPublished, isActive, readerPassword, accessKey } = body;
+    const { title, subtitle, orientation, coverColor, pages, isPublished, isActive, readerPassword, accessKey } = body;
     let storedPages = found.pages;
     if (pages !== undefined) {
       storedPages = await uploadSlideImages(found.id, pages);
@@ -37,9 +37,6 @@ export default async function handler(req, res) {
       orientation: orientation !== undefined ? orientation : found.orientation,
       coverColor: coverColor !== undefined ? coverColor : found.coverColor,
       pages: storedPages,
-      audioUrl: audioUrl !== undefined ? audioUrl : found.audioUrl,
-      autoplay: autoplay !== undefined ? autoplay : found.autoplay,
-      initialVolume: initialVolume !== undefined ? initialVolume : found.initialVolume,
       isPublished: isPublished !== undefined ? isPublished : found.isPublished,
       isActive: isActive !== undefined ? isActive : found.isActive,
       readerPassword: readerPassword !== undefined ? readerPassword : found.readerPassword,
@@ -54,7 +51,6 @@ export default async function handler(req, res) {
     if (!found) return res.status(404).json({ error: 'Handbook tidak ditemukan.' });
     if (found.pages) {
       const imageUrls = found.pages.map(function(p) { return p.imageUrl; }).filter(Boolean);
-      if (found.audioUrl) imageUrls.push(found.audioUrl);
       await deleteBlobFiles(imageUrls);
     }
     const newList = list.filter(function(h) { return h.id !== found.id; });

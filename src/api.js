@@ -262,59 +262,6 @@ export async function updateAdminHandbook(id, payload) {
   return updated;
 }
 
-import { upload as uploadDirectToBlob } from '@vercel/blob/client';
-
-export async function uploadAdminAudio(file, onProgress = null) {
-  const token = getAdminToken();
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const pathname = `audio/${Date.now()}-${safeName}`;
-
-  // 1. Direct client-to-blob upload (supports files up to 30MB bypassing serverless body limits)
-  try {
-    const blob = await uploadDirectToBlob(pathname, file, {
-      access: 'public',
-      handleUploadUrl: `${API_BASE}/admin/blob-upload`,
-      headers: { Authorization: `Bearer ${token}` },
-      onUploadProgress: (progress) => {
-        if (typeof onProgress === 'function' && progress.total > 0) {
-          onProgress(Math.round((progress.loaded / progress.total) * 100));
-        }
-      }
-    });
-
-    if (blob && blob.url) {
-      if (typeof onProgress === 'function') onProgress(100);
-      return { audioUrl: blob.url, fileName: file.name, fileSize: file.size };
-    }
-  } catch (directErr) {
-    console.warn('[uploadAdminAudio] Direct blob upload failed, trying server route fallback:', directErr.message);
-  }
-
-  // 2. Fallback: Server-side upload (for local Express server or standard serverless)
-  try {
-    const formData = new FormData();
-    formData.append('audio', file);
-
-    const res = await fetch(`${API_BASE}/admin/upload-audio`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      if (typeof onProgress === 'function') onProgress(100);
-      return { audioUrl: data.audioUrl, fileName: file.name, fileSize: file.size };
-    } else {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Server error: ${res.status}`);
-    }
-  } catch (e) {
-    console.error('[uploadAdminAudio] Server upload fallback failed:', e.message);
-    throw new Error(`Gagal mengunggah musik: ${e.message}`);
-  }
-}
-
 /**
  * Upload a single page image (as base64 dataUrl) directly to Vercel Blob.
  * Sends one image per request to stay under Vercel's 4.5MB serverless limit.

@@ -8,10 +8,6 @@
       "maxDuration": 60,
       "memory": 1024
     },
-    "api/admin/upload-audio.js": {
-      "maxDuration": 30,
-      "memory": 512
-    },
     "api/admin/upload-image.js": {
       "maxDuration": 30,
       "memory": 512

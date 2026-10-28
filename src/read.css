@@ -205,39 +205,6 @@
   color: var(--accent-primary);
 }
 
-/* Animated Equalizer Sound Wave for BGM */
-.audio-waves {
-  display: none;
-  align-items: flex-end;
-  gap: 2.5px;
-  height: 14px;
-}
-
-.dock-btn.active .audio-waves {
-  display: inline-flex;
-}
-
-.dock-btn.active #audio-note-icon {
-  display: none;
-}
-
-.audio-waves span {
-  display: block;
-  width: 2.5px;
-  background: #ffffff;
-  border-radius: 2px;
-  animation: waveBounce 0.7s ease-in-out infinite alternate;
-}
-
-.audio-waves span:nth-child(1) { height: 6px; animation-delay: 0.1s; }
-.audio-waves span:nth-child(2) { height: 14px; animation-delay: 0.3s; }
-.audio-waves span:nth-child(3) { height: 9px; animation-delay: 0.2s; }
-
-@keyframes waveBounce {
-  0% { height: 4px; }
-  100% { height: 14px; }
-}
-
 /* Shortcuts & Jump Modals */
 .shortcuts-modal-box {
   max-width: 440px;
@@ -456,7 +423,6 @@
   /* Di HP: Sembunyikan kontrol sekunder dari dock utama agar tidak berdesakan */
   #btn-toggle-autoplay,
   #btn-toggle-sound,
-  #reader-audio-group,
   .dock-divider:nth-of-type(n+2) {
     display: none !important;
   }

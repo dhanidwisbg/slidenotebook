@@ -110,43 +110,6 @@ export async function getPages(handbookId = 'default') {
   });
 }
 
-export async function saveMedia(handbookId, audioData) {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('media', 'readwrite');
-    const store = tx.objectStore('media');
-    const request = store.put({
-      id: `audio_${handbookId}`,
-      handbookId,
-      ...audioData
-    });
-    request.onsuccess = () => resolve();
-    request.onerror = (e) => reject(e.target.error);
-  });
-}
-
-export async function getMedia(handbookId = 'default') {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('media', 'readonly');
-    const store = tx.objectStore('media');
-    const request = store.get(`audio_${handbookId}`);
-    request.onsuccess = () => resolve(request.result || null);
-    request.onerror = (e) => reject(e.target.error);
-  });
-}
-
-export async function deleteMedia(handbookId = 'default') {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('media', 'readwrite');
-    const store = tx.objectStore('media');
-    const request = store.delete(`audio_${handbookId}`);
-    request.onsuccess = () => resolve();
-    request.onerror = (e) => reject(e.target.error);
-  });
-}
-
 export async function clearAll(handbookId = 'default') {
   const db = await openDB();
   return new Promise((resolve, reject) => {
