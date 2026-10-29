@@ -3,6 +3,7 @@ import { put, list, del, head } from '@vercel/blob';
 import crypto from 'crypto';
 
 export const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || null;
+export { list, put };
 
 const DB_BLOB_PATH = 'db/handbooks.json';
 
