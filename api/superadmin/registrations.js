@@ -61,26 +61,28 @@ export default async function handler(req, res) {
     return res.json(users.map(({ password, ...safe }) => safe));
   }
 
-  const urlMatch = req.url.match(/registrations\/([^/?]+)/);
-  const targetId = urlMatch ? urlMatch[1] : null;
+  const targetId = req.query.id || null;
+  const bodyAction = req.query.action || null;
 
-  // POST /registrations/:id/approve | /reject
+  // POST /registrations?id=..&action=approve|reject
   if (req.method === 'POST' && targetId) {
-    const action = req.url.includes('/approve') ? 'approved' : req.url.includes('/reject') ? 'rejected' : null;
-    if (!action) return res.status(400).json({ error: 'Aksi tidak dikenal.' });
-
+    const action = bodyAction;
+    if (action !== 'approve' && action !== 'reject') {
+      return res.status(400).json({ error: 'Aksi tidak dikenal.' });
+    }
+    const status = action === 'approve' ? 'approved' : 'rejected';
     const users = await readAdminUsers();
     const user = users.find((u) => u.id === targetId);
     if (!user) return res.status(404).json({ error: 'Pendaftar tidak ditemukan.' });
 
-    user.status = action;
-    user[action + 'At'] = Date.now();
+    user.status = status;
+    user[status + 'At'] = Date.now();
     const saved = await writeAdminUsers(users);
     if (!saved) return res.status(500).json({ error: 'Gagal menyimpan ke database.' });
-    return res.json({ success: true, message: `Akun "${user.name}" ${action === 'approved' ? 'disetujui' : 'ditolak'}.` });
+    return res.json({ success: true, message: `Akun "${user.name}" ${status === 'approved' ? 'disetujui' : 'ditolak'}.` });
   }
 
-  // DELETE /registrations/:id
+  // DELETE /registrations?id=..
   if (req.method === 'DELETE' && targetId) {
     const users = await readAdminUsers();
     const index = users.findIndex((u) => u.id === targetId);

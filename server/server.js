@@ -299,40 +299,53 @@ app.get('/api/superadmin/registrations', requireSuperAdmin, (req, res) => {
   res.json(list);
 });
 
-// POST /api/superadmin/registrations/:id/approve
+// POST /api/superadmin/registrations/:id/approve (path) dan ?id=&action= (query, untuk serverless)
+app.post('/api/superadmin/registrations/approve', requireSuperAdmin, (req, res) => {
+  return handleApproval(req, res, 'approved');
+});
+app.post('/api/superadmin/registrations/reject', requireSuperAdmin, (req, res) => {
+  return handleApproval(req, res, 'rejected');
+});
 app.post('/api/superadmin/registrations/:id/approve', requireSuperAdmin, (req, res) => {
-  const list = getAdminUsers();
-  const user = list.find((u) => u.id === req.params.id);
-  if (!user) return res.status(404).json({ error: 'Pendaftar tidak ditemukan.' });
-
-  user.status = 'approved';
-  user.approvedAt = Date.now();
-  saveAdminUsers(list);
-  res.json({ success: true, message: `Akun "${user.name}" disetujui.` });
+  req.query.id = req.query.id || req.params.id;
+  return handleApproval(req, res, 'approved');
 });
-
-// POST /api/superadmin/registrations/:id/reject
 app.post('/api/superadmin/registrations/:id/reject', requireSuperAdmin, (req, res) => {
-  const list = getAdminUsers();
-  const user = list.find((u) => u.id === req.params.id);
-  if (!user) return res.status(404).json({ error: 'Pendaftar tidak ditemukan.' });
-
-  user.status = 'rejected';
-  user.rejectedAt = Date.now();
-  saveAdminUsers(list);
-  res.json({ success: true, message: `Akun "${user.name}" ditolak.` });
+  req.query.id = req.query.id || req.params.id;
+  return handleApproval(req, res, 'rejected');
 });
 
-// DELETE /api/superadmin/registrations/:id - remove account entirely
-app.delete('/api/superadmin/registrations/:id', requireSuperAdmin, (req, res) => {
+function handleApproval(req, res, status) {
+  const targetId = req.query.id;
   const list = getAdminUsers();
-  const index = list.findIndex((u) => u.id === req.params.id);
+  const user = list.find((u) => u.id === targetId);
+  if (!user) return res.status(404).json({ error: 'Pendaftar tidak ditemukan.' });
+
+  user.status = status;
+  user[status + 'At'] = Date.now();
+  saveAdminUsers(list);
+  res.json({ success: true, message: `Akun "${user.name}" ${status === 'approved' ? 'disetujui' : 'ditolak'}.` });
+}
+
+// DELETE /api/superadmin/registrations/:id - remove account entirely (path atau ?id=)
+app.delete('/api/superadmin/registrations/:id', requireSuperAdmin, (req, res) => {
+  req.query.id = req.query.id || req.params.id;
+  return handleDelete(req, res);
+});
+app.delete('/api/superadmin/registrations', requireSuperAdmin, (req, res) => {
+  return handleDelete(req, res);
+});
+
+function handleDelete(req, res) {
+  const targetId = req.query.id;
+  const list = getAdminUsers();
+  const index = list.findIndex((u) => u.id === targetId);
   if (index === -1) return res.status(404).json({ error: 'Pendaftar tidak ditemukan.' });
 
   const [removed] = list.splice(index, 1);
   saveAdminUsers(list);
   res.json({ success: true, message: `Akun "${removed.name}" dihapus.` });
-});
+}
 
 // POST /api/auth/superadmin/logout
 app.post('/api/auth/superadmin/logout', (req, res) => {

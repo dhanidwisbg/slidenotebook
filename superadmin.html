@@ -281,9 +281,10 @@
             try {
               if (action === 'delete') {
                 if (!confirm(`Hapus akun "${u.name}"? Tindakan ini permanen.`)) return;
-                await api(`/superadmin/registrations/${u.id}`, { method: 'DELETE' });
+                await api(`/superadmin/registrations?id=${u.id}`, { method: 'DELETE' });
               } else {
-                await api(`/superadmin/registrations/${u.id}/${action}`, { method: 'POST' });
+                // approve/reject via query: 3-segmen path tak tertangkap serverless
+                await api(`/superadmin/registrations?id=${u.id}&action=${action}`, { method: 'POST' });
               }
               await loadRegistrations();
             } catch (err) {
