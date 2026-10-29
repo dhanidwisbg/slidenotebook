@@ -14,42 +14,26 @@ export function setAdminToken(token) {
   }
 }
 
-// Admin Auth APIs (Passcode: 12345678, or registered name+password)
-export async function loginAdmin(passcode, name) {
+// Admin Auth APIs (registered name + password, approved by super admin)
+export async function loginAdmin(password, name) {
   try {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(name ? { email: name, password: passcode } : { passcode })
+      body: JSON.stringify({ email: name, password })
     });
 
+    const data = await res.json().catch(() => ({}));
     if (res.ok) {
-      const data = await res.json();
       setAdminToken(data.token);
       return data;
-    } else {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || 'Kode akses admin salah.');
     }
+    throw new Error(data.error || 'Nama atau password salah.');
   } catch (err) {
     if (err.message && !err.message.includes('Failed to fetch')) {
       throw err;
     }
-    // Fallback for Vercel static deployments where Express API isn't running
-    console.warn('API server unreachable, evaluating passcode locally for Vercel static hosting.');
-  }
-
-  // Client-side validation fallback for Vercel static deploy (passcode only)
-  if (!name && passcode === '12345678') {
-    const token = 'token_admin_' + Date.now();
-    setAdminToken(token);
-    return {
-      success: true,
-      token,
-      user: { email: 'admin@flipbook.id', name: 'Administrator', role: 'admin' }
-    };
-  } else {
-    throw new Error('Nama/password salah, atau server tidak terjangkau.');
+    throw new Error('Server tidak terjangkau. Coba lagi nanti.');
   }
 }
 

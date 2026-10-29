@@ -877,7 +877,7 @@ function setupEventListeners() {
       showToast('Login berhasil!');
       await showDashboard();
     } catch (err) {
-      DOM.loginError.textContent = err.message || 'Kode akses admin salah. Silakan masukkan 12345678.';
+      DOM.loginError.textContent = err.message || 'Nama atau password salah.';
       DOM.loginError.style.display = 'block';
     }
   });

@@ -3,9 +3,6 @@ import { put, list, del, head } from '@vercel/blob';
 import crypto from 'crypto';
 
 export const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || null;
-export const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || '12345678';
-export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@flipbook.id';
-export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 const DB_BLOB_PATH = 'db/handbooks.json';
 
@@ -49,7 +46,7 @@ export function getTokenFromReq(req) {
     return authHeader.slice(7);
   }
   const cookieHeader = req.headers.cookie || '';
-  const match = cookieHeader.match(/admin_token=([^;]+)/);
+  const match = cookieHeader.match(/(?:admin_token|superadmin_token)=([^;]+)/);
   return match ? match[1] : null;
 }
 

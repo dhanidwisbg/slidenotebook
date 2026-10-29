@@ -115,12 +115,8 @@ function saveSlideLocally(handbookId, page, buffer, ext) {
 
 // ============================================================================
 // AUTHENTICATION SYSTEM (Admin Only)
-// Default Admin: admin@flipbook.id / admin123
+// Admins log in with a registered, approved name + password.
 // ============================================================================
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@flipbook.id';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
-const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || '12345678';
-
 function requireAdminAuth(req, res, next) {
   const authHeader = req.headers.authorization;
   const token = (authHeader && authHeader.startsWith('Bearer '))
@@ -138,62 +134,36 @@ function requireAdminAuth(req, res, next) {
   next();
 }
 
-// POST /api/auth/login
+// POST /api/auth/login - registered + approved admin only (name + password)
 app.post('/api/auth/login', (req, res) => {
-  const { passcode, email, password } = req.body;
+  const { email, password } = req.body;
 
-  // Legacy passcode still works; otherwise check an approved registered account
-  if (
-    passcode === ADMIN_PASSCODE ||
-    passcode === '12345678' ||
-    (email === ADMIN_EMAIL && password === ADMIN_PASSWORD)
-  ) {
-    const token = crypto.randomBytes(32).toString('hex');
-    const user = { email: 'admin@flipbook.id', name: 'Administrator', role: 'admin' };
-
-    activeSessions.set(token, user);
-    res.cookie('admin_token', token, {
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: 'lax'
-    });
-
-    return res.json({
-      success: true,
-      token,
-      user
-    });
+  if (!email || !password) {
+    return res.status(401).json({ error: 'Masukkan nama dan password akun admin Anda.' });
   }
 
-  // Registered account login: name + password, must be approved
-  if (email && password) {
-    const user = getAdminUsers().find(
-      (u) => u.name.toLowerCase() === String(email).trim().toLowerCase()
-    );
-    if (!user || user.password !== String(password)) {
-      return res.status(401).json({ error: 'Nama atau password salah.' });
-    }
-    if (user.status === 'pending') {
-      return res.status(403).json({ error: 'Akun masih menunggu persetujuan super admin.' });
-    }
-    if (user.status === 'rejected') {
-      return res.status(403).json({ error: 'Akun Anda ditolak super admin.' });
-    }
-
-    const token = crypto.randomBytes(32).toString('hex');
-    const sessionUser = { email: user.name, name: user.name, role: 'admin' };
-    activeSessions.set(token, sessionUser);
-    res.cookie('admin_token', token, {
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: 'lax'
-    });
-    return res.json({ success: true, token, user: sessionUser });
+  const user = getAdminUsers().find(
+    (u) => u.name.toLowerCase() === String(email).trim().toLowerCase()
+  );
+  if (!user || user.password !== String(password)) {
+    return res.status(401).json({ error: 'Nama atau password salah.' });
+  }
+  if (user.status === 'pending') {
+    return res.status(403).json({ error: 'Akun masih menunggu persetujuan super admin.' });
+  }
+  if (user.status === 'rejected') {
+    return res.status(403).json({ error: 'Akun Anda ditolak super admin.' });
   }
 
-  return res.status(401).json({
-    error: 'Kode akses admin salah. Silakan masukkan kode 12345678.'
+  const token = crypto.randomBytes(32).toString('hex');
+  const sessionUser = { email: user.name, name: user.name, role: 'admin' };
+  activeSessions.set(token, sessionUser);
+  res.cookie('admin_token', token, {
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: 'lax'
   });
+  return res.json({ success: true, token, user: sessionUser });
 });
 
 // POST /api/auth/logout
@@ -240,6 +210,22 @@ function getAdminUsers() {
 function saveAdminUsers(list) {
   fs.writeFileSync(ADMIN_USERS_FILE, JSON.stringify(list, null, 2));
 }
+
+// Seed default admin so there is always one working account
+function ensureDefaultAdmin() {
+  const list = getAdminUsers();
+  if (!list.some((u) => u.name === 'admin')) {
+    list.push({
+      id: 'adm_default',
+      name: 'admin',
+      password: process.env.DEFAULT_ADMIN_PASSWORD || 'admin123',
+      status: 'approved',
+      createdAt: Date.now()
+    });
+    saveAdminUsers(list);
+  }
+}
+ensureDefaultAdmin();
 
 function requireSuperAdmin(req, res, next) {
   const authHeader = req.headers.authorization;
