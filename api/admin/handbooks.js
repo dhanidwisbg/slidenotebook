@@ -11,10 +11,12 @@ export default async function handler(req, res) {
   const admin = requireAdmin(req, res);
   if (!admin) return;
 
-  // GET - list all handbooks (summary only)
+  // GET - list handbooks owned by this admin (summary only)
   if (req.method === 'GET') {
     const list = await readHandbooksDB();
-    const summaries = list.map(function(item) {
+    const owner = admin.email || '';
+    const visible = list.filter(function(item) { return !item.ownerName || item.ownerName === owner; });
+    const summaries = visible.map(function(item) {
       return {
         id: item.id,
         uniqueSlug: item.uniqueSlug,
@@ -22,6 +24,8 @@ export default async function handler(req, res) {
         subtitle: item.subtitle,
         orientation: item.orientation,
         coverColor: item.coverColor,
+        ownerName: item.ownerName || null,
+        coverImage: (item.pages && item.pages.length > 0) ? (item.pages[0].imageUrl || null) : null,
         pageCount: item.pages ? item.pages.length : 0,
         isPublished: !!item.isPublished,
         isActive: item.isActive !== false,
@@ -50,6 +54,7 @@ export default async function handler(req, res) {
       id,
       uniqueSlug,
       accessKey,
+      ownerName: admin.email || null,
       title: title || 'Handbook Baru',
       subtitle: subtitle || '',
       orientation: orientation || 'portrait',

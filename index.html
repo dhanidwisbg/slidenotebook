@@ -549,6 +549,17 @@
         overflow: hidden;
       }
 
+      .hb-card-owner {
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: var(--accent-secondary-text);
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
       .hb-card-cta {
         margin-top: auto;
         padding-top: 0.75rem;
@@ -1544,6 +1555,7 @@
           <div class="hb-card-info">
             <h3 class="hb-card-title">${escapeHtml(hb.title || 'Untitled')}</h3>
             ${hb.subtitle ? `<p class="hb-card-subtitle">${escapeHtml(hb.subtitle)}</p>` : ''}
+            ${hb.ownerName ? `<p class="hb-card-owner">oleh ${escapeHtml(hb.ownerName)}</p>` : ''}
             <div class="hb-card-cta">
               <span>${hasPassword ? 'Buka dengan PIN' : 'Buka Flipbook'}</span>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">

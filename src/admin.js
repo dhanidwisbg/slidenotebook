@@ -871,13 +871,47 @@ function setupEventListeners() {
 
     try {
       const passcode = DOM.loginPasscode.value.trim();
-      const res = await loginAdmin(passcode);
+      const name = document.getElementById('login-name')?.value.trim();
+      const res = await loginAdmin(passcode, name);
       adminState.user = res.user;
       showToast('Login berhasil!');
       await showDashboard();
     } catch (err) {
       DOM.loginError.textContent = err.message || 'Kode akses admin salah. Silakan masukkan 12345678.';
       DOM.loginError.style.display = 'block';
+    }
+  });
+
+  // Registration toggle + submit
+  document.getElementById('link-show-register')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const box = document.getElementById('register-box');
+    box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+  });
+
+  document.getElementById('btn-submit-register')?.addEventListener('click', async () => {
+    const msg = document.getElementById('register-msg');
+    const name = document.getElementById('reg-name').value.trim();
+    const password = document.getElementById('reg-password').value;
+    msg.style.color = 'var(--text-muted)';
+    msg.textContent = 'Mengirim pendaftaran...';
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, password })
+      });
+      const data = await res.json();
+      msg.style.color = res.ok ? 'var(--success)' : 'var(--danger)';
+      msg.textContent = data.message || data.error || 'Gagal mendaftar.';
+      if (res.ok) {
+        document.getElementById('reg-name').value = '';
+        document.getElementById('reg-password').value = '';
+      }
+    } catch (err) {
+      msg.style.color = 'var(--danger)';
+      msg.textContent = `Gagal mendaftar: ${err.message}`;
     }
   });
 

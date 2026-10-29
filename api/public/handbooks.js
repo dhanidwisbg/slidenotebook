@@ -18,6 +18,7 @@ export default async function handler(req, res) {
         orientation: h.orientation,
         coverColor: h.coverColor,
         pageCount: h.pages ? h.pages.length : 0,
+        ownerName: h.ownerName || null,
         coverImage: (h.pages && h.pages.length > 0) ? (h.pages[0].imageUrl || h.pages[0].dataUrl || null) : null,
         hasPassword: !!(h.readerPassword && h.readerPassword.trim() !== ''),
         updatedAt: h.updatedAt || h.createdAt

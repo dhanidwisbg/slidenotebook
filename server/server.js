@@ -40,6 +40,11 @@ if (!fs.existsSync(HANDBOOKS_FILE)) {
   fs.writeFileSync(HANDBOOKS_FILE, JSON.stringify([], null, 2));
 }
 
+const ADMIN_USERS_FILE = path.join(DATA_DIR, 'admin-users.json');
+if (!fs.existsSync(ADMIN_USERS_FILE)) {
+  fs.writeFileSync(ADMIN_USERS_FILE, JSON.stringify([], null, 2));
+}
+
 // Middleware
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '150mb' }));
@@ -137,7 +142,7 @@ function requireAdminAuth(req, res, next) {
 app.post('/api/auth/login', (req, res) => {
   const { passcode, email, password } = req.body;
 
-  // Accept passcode 12345678 or legacy credentials
+  // Legacy passcode still works; otherwise check an approved registered account
   if (
     passcode === ADMIN_PASSCODE ||
     passcode === '12345678' ||
@@ -158,6 +163,32 @@ app.post('/api/auth/login', (req, res) => {
       token,
       user
     });
+  }
+
+  // Registered account login: name + password, must be approved
+  if (email && password) {
+    const user = getAdminUsers().find(
+      (u) => u.name.toLowerCase() === String(email).trim().toLowerCase()
+    );
+    if (!user || user.password !== String(password)) {
+      return res.status(401).json({ error: 'Nama atau password salah.' });
+    }
+    if (user.status === 'pending') {
+      return res.status(403).json({ error: 'Akun masih menunggu persetujuan super admin.' });
+    }
+    if (user.status === 'rejected') {
+      return res.status(403).json({ error: 'Akun Anda ditolak super admin.' });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const sessionUser = { email: user.name, name: user.name, role: 'admin' };
+    activeSessions.set(token, sessionUser);
+    res.cookie('admin_token', token, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: 'lax'
+    });
+    return res.json({ success: true, token, user: sessionUser });
   }
 
   return res.status(401).json({
@@ -188,6 +219,145 @@ app.get('/api/auth/me', (req, res) => {
     return res.json({ authenticated: true, user: activeSessions.get(token) });
   }
   res.json({ authenticated: false });
+});
+
+// ============================================================================
+// ADMIN REGISTRATION & SUPER ADMIN APPROVAL
+// Accounts register with name + password (status: pending), then a single
+// super admin (BNIW01) approves or rejects them from /superadmin.html
+// ============================================================================
+const SUPERADMIN_ID = process.env.SUPERADMIN_ID || 'BNIW01';
+const SUPERADMIN_PASSWORD = process.env.SUPERADMIN_PASSWORD || '123123456456';
+
+function getAdminUsers() {
+  try {
+    return JSON.parse(fs.readFileSync(ADMIN_USERS_FILE, 'utf8'));
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveAdminUsers(list) {
+  fs.writeFileSync(ADMIN_USERS_FILE, JSON.stringify(list, null, 2));
+}
+
+function requireSuperAdmin(req, res, next) {
+  const authHeader = req.headers.authorization;
+  const token = (authHeader && authHeader.startsWith('Bearer '))
+    ? authHeader.slice(7)
+    : req.cookies?.superadmin_token;
+
+  if (!token || !activeSessions.has(token) || activeSessions.get(token)?.role !== 'superadmin') {
+    return res.status(401).json({ error: 'Akses super admin ditolak.', code: 'UNAUTHORIZED' });
+  }
+  req.adminUser = activeSessions.get(token);
+  next();
+}
+
+// POST /api/auth/register - admin candidate registers with name + password
+app.post('/api/auth/register', (req, res) => {
+  const { name, password } = req.body || {};
+
+  if (!name || !String(name).trim() || !password || String(password).length < 6) {
+    return res.status(400).json({
+      error: 'Nama wajib diisi dan password minimal 6 karakter.'
+    });
+  }
+
+  const list = getAdminUsers();
+  const normalizedName = String(name).trim();
+
+  if (list.some((u) => u.name.toLowerCase() === normalizedName.toLowerCase())) {
+    return res.status(409).json({ error: 'Nama tersebut sudah terdaftar.' });
+  }
+
+  const user = {
+    id: 'adm_' + crypto.randomBytes(6).toString('hex'),
+    name: normalizedName,
+    password: String(password), // NOTE: plain text matches this project's storage style; hash if deployed publicly
+    status: 'pending',
+    createdAt: Date.now()
+  };
+  list.push(user);
+  saveAdminUsers(list);
+
+  res.status(201).json({
+    success: true,
+    message: 'Pendaftaran terkirim. Akun menunggu persetujuan super admin.'
+  });
+});
+
+// POST /api/auth/superadmin/login
+app.post('/api/auth/superadmin/login', (req, res) => {
+  const { adminId, password } = req.body || {};
+
+  if (adminId !== SUPERADMIN_ID || password !== SUPERADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'ID atau password super admin salah.' });
+  }
+
+  const token = crypto.randomBytes(32).toString('hex');
+  const user = { email: SUPERADMIN_ID, name: 'Super Admin', role: 'superadmin' };
+  activeSessions.set(token, user);
+  res.cookie('superadmin_token', token, {
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: 'lax'
+  });
+
+  res.json({ success: true, token, user });
+});
+
+// GET /api/superadmin/registrations - list all registered accounts
+app.get('/api/superadmin/registrations', requireSuperAdmin, (req, res) => {
+  const list = getAdminUsers().map(({ password, ...safe }) => safe);
+  res.json(list);
+});
+
+// POST /api/superadmin/registrations/:id/approve
+app.post('/api/superadmin/registrations/:id/approve', requireSuperAdmin, (req, res) => {
+  const list = getAdminUsers();
+  const user = list.find((u) => u.id === req.params.id);
+  if (!user) return res.status(404).json({ error: 'Pendaftar tidak ditemukan.' });
+
+  user.status = 'approved';
+  user.approvedAt = Date.now();
+  saveAdminUsers(list);
+  res.json({ success: true, message: `Akun "${user.name}" disetujui.` });
+});
+
+// POST /api/superadmin/registrations/:id/reject
+app.post('/api/superadmin/registrations/:id/reject', requireSuperAdmin, (req, res) => {
+  const list = getAdminUsers();
+  const user = list.find((u) => u.id === req.params.id);
+  if (!user) return res.status(404).json({ error: 'Pendaftar tidak ditemukan.' });
+
+  user.status = 'rejected';
+  user.rejectedAt = Date.now();
+  saveAdminUsers(list);
+  res.json({ success: true, message: `Akun "${user.name}" ditolak.` });
+});
+
+// DELETE /api/superadmin/registrations/:id - remove account entirely
+app.delete('/api/superadmin/registrations/:id', requireSuperAdmin, (req, res) => {
+  const list = getAdminUsers();
+  const index = list.findIndex((u) => u.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'Pendaftar tidak ditemukan.' });
+
+  const [removed] = list.splice(index, 1);
+  saveAdminUsers(list);
+  res.json({ success: true, message: `Akun "${removed.name}" dihapus.` });
+});
+
+// POST /api/auth/superadmin/logout
+app.post('/api/auth/superadmin/logout', (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = (authHeader && authHeader.startsWith('Bearer '))
+    ? authHeader.slice(7)
+    : req.cookies?.superadmin_token;
+
+  if (token) activeSessions.delete(token);
+  res.clearCookie('superadmin_token');
+  res.json({ success: true });
 });
 
 // ============================================================================
@@ -334,14 +504,18 @@ app.post('/api/admin/convert-pptx', requireAdminAuth, (req, res) => {
 // GET /api/admin/handbooks - List all handbooks
 app.get('/api/admin/handbooks', requireAdminAuth, (req, res) => {
   const list = getHandbooks();
+  // Admin hanya melihat handbook miliknya sendiri
+  const owner = req.adminUser?.email || '';
+  const visible = list.filter((item) => !item.ownerName || item.ownerName === owner);
   // Return summary list without heavy page image data for speed
-  const summaries = list.map((item) => ({
+  const summaries = visible.map((item) => ({
     id: item.id,
     uniqueSlug: item.uniqueSlug,
     title: item.title,
     subtitle: item.subtitle,
     orientation: item.orientation,
     coverColor: item.coverColor,
+    ownerName: item.ownerName || null,
     coverImage: (item.pages && item.pages.length > 0) ? (item.pages[0].imageUrl || null) : null,
     pageCount: item.pages ? item.pages.length : 0,
     isPublished: !!item.isPublished,
@@ -360,6 +534,11 @@ app.get('/api/admin/handbooks/:id', requireAdminAuth, (req, res) => {
   const found = list.find((h) => h.id === req.params.id || h.uniqueSlug === req.params.id);
   if (!found) {
     return res.status(404).json({ error: 'Handbook tidak ditemukan.' });
+  }
+  // Admin hanya boleh membuka handbook miliknya sendiri
+  const owner = req.adminUser?.email || '';
+  if (found.ownerName && found.ownerName !== owner) {
+    return res.status(403).json({ error: 'Handbook ini milik admin lain.' });
   }
   if (!found.accessKey) {
     found.accessKey = `key_${found.uniqueSlug || found.id}`;
@@ -383,6 +562,7 @@ app.post('/api/admin/handbooks', requireAdminAuth, async (req, res) => {
     id,
     uniqueSlug,
     accessKey,
+    ownerName: req.adminUser?.email || null,
     title: title || 'Handbook Baru',
     subtitle: subtitle || '',
     orientation: orientation || 'portrait',
@@ -408,6 +588,12 @@ app.put('/api/admin/handbooks/:id', requireAdminAuth, async (req, res) => {
 
   if (index === -1) {
     return res.status(404).json({ error: 'Handbook tidak ditemukan.' });
+  }
+
+  // Admin hanya boleh mengubah handbook miliknya sendiri
+  const owner = req.adminUser?.email || '';
+  if (list[index].ownerName && list[index].ownerName !== owner) {
+    return res.status(403).json({ error: 'Handbook ini milik admin lain.' });
   }
 
   const existing = list[index];
@@ -454,6 +640,12 @@ app.delete('/api/admin/handbooks/:id', requireAdminAuth, async (req, res) => {
 
   if (!found) {
     return res.status(404).json({ error: 'Handbook tidak ditemukan.' });
+  }
+
+  // Admin hanya boleh menghapus handbook miliknya sendiri
+  const owner = req.adminUser?.email || '';
+  if (found.ownerName && found.ownerName !== owner) {
+    return res.status(403).json({ error: 'Handbook ini milik admin lain.' });
   }
 
   // Cleanup Vercel Blob files if any
@@ -512,6 +704,7 @@ app.get('/api/public/handbooks', (req, res) => {
       orientation: h.orientation,
       coverColor: h.coverColor,
       pageCount: h.pages ? h.pages.length : 0,
+      ownerName: h.ownerName || null,
       coverImage: (h.pages && h.pages.length > 0) ? (h.pages[0].imageUrl || h.pages[0].dataUrl || null) : null,
       hasPassword: !!(h.readerPassword && h.readerPassword.trim() !== ''),
       updatedAt: h.updatedAt || h.createdAt

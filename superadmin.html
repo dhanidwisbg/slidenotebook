@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Super Admin — Handbook Digital</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23005E6A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/style.css" />
+    <style>
+      body {
+        font-family: var(--font-sans);
+        background: var(--bg-main);
+        color: var(--text-main);
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      .sa-container {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 5rem;
+      }
+
+      .sa-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+      }
+
+      .sa-login {
+        max-width: 440px;
+        margin: 12vh auto 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1.1rem;
+      }
+
+      .sa-title {
+        font-family: var(--font-heading-sans);
+        font-size: 1.6rem;
+        font-weight: 800;
+        margin: 0;
+      }
+
+      .sa-subtitle {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin: 0;
+      }
+
+      .sa-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      .sa-user-tag {
+        background: var(--bg-surface-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: 9999px;
+        padding: 0.35rem 0.9rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
+
+      .sa-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+
+      .sa-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.8rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-card);
+      }
+
+      .sa-item-name {
+        flex: 1;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .sa-item-date {
+        font-size: 0.76rem;
+        color: var(--text-faint);
+        white-space: nowrap;
+      }
+
+      .sa-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.2rem 0.6rem;
+        border-radius: 9999px;
+        border: 1px solid;
+        white-space: nowrap;
+      }
+
+      .sa-badge.pending { color: var(--warning); border-color: var(--warning); background: var(--warning-bg); }
+      .sa-badge.approved { color: var(--success); border-color: var(--success); background: var(--success-bg); }
+      .sa-badge.rejected { color: var(--danger); border-color: var(--danger); background: var(--danger-bg); }
+
+      .sa-actions {
+        display: flex;
+        gap: 0.4rem;
+        flex-shrink: 0;
+      }
+
+      .sa-btn {
+        border: 1px solid var(--border-color);
+        background: none;
+        border-radius: 9999px;
+        padding: 0.4rem 0.85rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        color: var(--text-main);
+        transition: all 0.2s ease;
+        font-family: inherit;
+      }
+
+      .sa-btn:hover { border-color: var(--border-strong); background: var(--bg-surface-elevated); }
+      .sa-btn.approve:hover { color: var(--success); border-color: var(--success); background: var(--success-bg); }
+      .sa-btn.reject:hover, .sa-btn.delete:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-bg); }
+
+      .sa-error-msg {
+        padding: 0.65rem 0.9rem;
+        background: var(--danger-bg);
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        border-radius: 10px;
+        font-size: 0.82rem;
+      }
+
+      .sa-empty {
+        text-align: center;
+        color: var(--text-muted);
+        padding: 2.5rem 0;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sa-container">
+      <!-- LOGIN -->
+      <div id="sa-login" class="sa-card sa-login" style="display: none;">
+        <div class="login-brand">
+          <div class="brand-icon" style="width: 52px; height: 52px; border-radius: 14px; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; color: #fff;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h1 class="sa-title">Super Admin</h1>
+          <p class="sa-subtitle">Akses khusus untuk persetujuan akun admin.</p>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="sa-id">ID Super Admin</label>
+          <input type="text" id="sa-id" class="input-text" placeholder="Masukkan id super admin" autocomplete="off" />
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="sa-password">Password</label>
+          <input type="password" id="sa-password" class="input-text" placeholder="Password super admin" />
+        </div>
+
+        <div id="sa-error" class="sa-error-msg" style="display: none;"></div>
+
+        <button class="btn-primary-action" id="btn-sa-login" style="justify-content: center;">
+          <span>Masuk</span>
+        </button>
+        <a href="/admin.html" style="text-align: center; font-size: 0.8rem; color: var(--text-muted);">← Kembali ke Admin Portal</a>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div id="sa-dashboard" style="display: none;">
+        <div class="sa-card">
+          <div class="sa-header">
+            <div>
+              <h1 class="sa-title">Approval Akun Admin</h1>
+              <p class="sa-subtitle">Setujui atau tolak pendaftaran admin baru.</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span class="sa-user-tag" id="sa-user">Super Admin</span>
+              <button class="sa-btn" id="btn-sa-logout">Keluar</button>
+            </div>
+          </div>
+
+          <div class="sa-list" id="sa-list">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      const $ = (id) => document.getElementById(id);
+      let token = sessionStorage.getItem('sa_token') || '';
+
+      function showLogin() {
+        $('sa-login').style.display = 'flex';
+        $('sa-dashboard').style.display = 'none';
+      }
+
+      function showDashboard() {
+        $('sa-login').style.display = 'none';
+        $('sa-dashboard').style.display = 'block';
+        loadRegistrations();
+      }
+
+      async function api(path, options = {}) {
+        const res = await fetch(`/api${path}`, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(options.headers || {})
+          }
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          sessionStorage.removeItem('sa_token');
+          token = '';
+          showLogin();
+          throw new Error(data.error || 'Sesi berakhir. Silakan login lagi.');
+        }
+        if (!res.ok) throw new Error(data.error || 'Terjadi kesalahan.');
+        return data;
+      }
+
+      function fmtDate(ts) {
+        if (!ts) return '';
+        return new Date(ts).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+      }
+
+      function renderList(list) {
+        const wrap = $('sa-list');
+        wrap.innerHTML = '';
+
+        if (!list.length) {
+          wrap.innerHTML = '<div class="sa-empty">Belum ada pendaftar.</div>';
+          return;
+        }
+
+        // Pending first, then approved/rejected by newest
+        const order = { pending: 0, approved: 1, rejected: 2 };
+        list.sort((a, b) => (order[a.status] - order[b.status]) || (b.createdAt - a.createdAt));
+
+        for (const u of list) {
+          const item = document.createElement('div');
+          item.className = 'sa-item';
+          item.innerHTML = `
+            <span class="sa-item-name">${u.name}</span>
+            <span class="sa-item-date">${fmtDate(u.createdAt)}</span>
+            <span class="sa-badge ${u.status}">${u.status === 'pending' ? 'Menunggu' : u.status === 'approved' ? 'Disetujui' : 'Ditolak'}</span>
+            <div class="sa-actions">
+              ${u.status !== 'approved' ? '<button class="sa-btn approve" data-action="approve">Setujui</button>' : ''}
+              ${u.status !== 'rejected' ? '<button class="sa-btn reject" data-action="reject">Tolak</button>' : ''}
+              <button class="sa-btn delete" data-action="delete">Hapus</button>
+            </div>
+          `;
+
+          item.addEventListener('click', async (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const action = btn.dataset.action;
+            try {
+              if (action === 'delete') {
+                if (!confirm(`Hapus akun "${u.name}"? Tindakan ini permanen.`)) return;
+                await api(`/superadmin/registrations/${u.id}`, { method: 'DELETE' });
+              } else {
+                await api(`/superadmin/registrations/${u.id}/${action}`, { method: 'POST' });
+              }
+              await loadRegistrations();
+            } catch (err) {
+              alert(err.message);
+            }
+          });
+
+          wrap.appendChild(item);
+        }
+      }
+
+      async function loadRegistrations() {
+        try {
+          const list = await api('/superadmin/registrations');
+          renderList(list);
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      $('btn-sa-login').addEventListener('click', async () => {
+        const errBox = $('sa-error');
+        errBox.style.display = 'none';
+        try {
+          const res = await fetch('/api/auth/superadmin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ adminId: $('sa-id').value.trim(), password: $('sa-password').value })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Login gagal.');
+          token = data.token;
+          sessionStorage.setItem('sa_token', token);
+          $('sa-user').textContent = data.user.name;
+          showDashboard();
+        } catch (err) {
+          errBox.textContent = err.message;
+          errBox.style.display = 'block';
+        }
+      });
+
+      $('sa-password').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') $('btn-sa-login').click();
+      });
+
+      $('btn-sa-logout').addEventListener('click', async () => {
+        try { await api('/auth/superadmin/logout', { method: 'POST' }); } catch (e) {}
+        sessionStorage.removeItem('sa_token');
+        token = '';
+        showLogin();
+      });
+
+      // Boot: check stored session
+      (async () => {
+        if (!token) { showLogin(); return; }
+        try {
+          await api('/superadmin/registrations');
+          showDashboard();
+        } catch (e) {
+          showLogin();
+        }
+      })();
+    </script>
+  </body>
+</html>
