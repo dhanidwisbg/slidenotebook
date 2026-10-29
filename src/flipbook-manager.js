@@ -16,6 +16,7 @@ export class FlipbookManager {
     this.soundEnabled = true;
     this.currentPage = 0;
     this.totalPages = 0;
+    this.flipLocked = false; // blocks page flipping while magnifier is active
     this.onPageChange = options.onPageChange || null;
     this.onInit = options.onInit || null;
 
@@ -349,16 +350,28 @@ export class FlipbookManager {
   }
 
   next() {
+    if (this.flipLocked) return; // locked while magnifier is active
     if (this.pageFlip) this.pageFlip.flipNext();
   }
 
   prev() {
+    if (this.flipLocked) return; // locked while magnifier is active
     if (this.pageFlip) this.pageFlip.flipPrev();
   }
 
   goToPage(index) {
+    if (this.flipLocked) return; // locked while magnifier is active
     if (this.pageFlip && index >= 0 && index < this.totalPages) {
       this.pageFlip.flip(index);
+    }
+  }
+
+  // Kunci semua bentuk membalik: tombol/keyboard (flipLocked) plus animasi
+  // lipatan sudut yang dipicu mousemove global internal page-flip
+  setFlipLocked(locked) {
+    this.flipLocked = locked;
+    if (this.pageFlip) {
+      this.pageFlip.getSettings().showPageCorners = !locked;
     }
   }
 }

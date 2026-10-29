@@ -51,6 +51,7 @@ const DOM = {
   pageIndicator: document.getElementById('page-indicator'),
   btnToggleToc: document.getElementById('btn-toggle-toc'),
   btnToggleSound: document.getElementById('btn-toggle-sound'),
+  btnToggleMagnifier: document.getElementById('btn-toggle-magnifier'),
   btnToggleFullscreen: document.getElementById('btn-toggle-fullscreen'),
   thumbnailDrawer: document.getElementById('thumbnail-drawer'),
   btnCloseDrawer: document.getElementById('btn-close-drawer'),
@@ -326,6 +327,141 @@ function stopAutoPlay() {
 }
 
 // ============================================================================
+// MAGNIFIER (KACA PEMBESAR)
+// ============================================================================
+const MAGNIFIER_ZOOM = 1.75;
+const MAGNIFIER_ZOOM_MIN = 1.1;
+const MAGNIFIER_ZOOM_MAX = 4;
+const magnifier = { active: false, lens: null, shield: null, viewportEl: null, zoom: MAGNIFIER_ZOOM, lastClientX: 0, lastClientY: 0 };
+
+function setupMagnifier() {
+  magnifier.viewportEl = document.querySelector('.reader-viewport');
+
+  const lens = document.createElement('div');
+  lens.className = 'magnifier-lens';
+  lens.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(lens);
+  magnifier.lens = lens;
+
+  // Shield: menangkap klik di mana pun (klik = tutup kaca) dan memblokir
+  // mouse event sampai ke buku, sehingga animasi balik tak terpicu
+  const shield = document.createElement('div');
+  shield.className = 'magnifier-shield';
+  shield.setAttribute('aria-hidden', 'true');
+  shield.addEventListener('click', () => toggleMagnifier());
+  document.body.appendChild(shield);
+  magnifier.shield = shield;
+
+  DOM.btnToggleMagnifier?.addEventListener('click', toggleMagnifier);
+
+  // Scroll mouse = zoom in/out lensa saat kaca aktif
+  window.addEventListener('wheel', (e) => {
+    if (!magnifier.active) return;
+    e.preventDefault();
+    const step = e.deltaY < 0 ? 0.25 : -0.25;
+    magnifier.zoom = Math.max(MAGNIFIER_ZOOM_MIN, Math.min(MAGNIFIER_ZOOM_MAX, Math.round((magnifier.zoom + step) * 100) / 100));
+    moveMagnifier(magnifier.lastClientX, magnifier.lastClientY);
+  }, { passive: false });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!magnifier.active) return;
+    magnifier.lastClientX = e.clientX;
+    magnifier.lastClientY = e.clientY;
+    moveMagnifier(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && magnifier.active) toggleMagnifier();
+  });
+
+  // Keyboard shortcut M (guard sama dengan handler shortcut lain)
+  window.addEventListener('keydown', (e) => {
+    if (e.key !== 'm' && e.key !== 'M') return;
+    const activeEl = document.activeElement;
+    const isEditing = activeEl && (
+      activeEl.tagName === 'INPUT' ||
+      activeEl.tagName === 'TEXTAREA' ||
+      activeEl.tagName === 'SELECT' ||
+      activeEl.isContentEditable
+    );
+    if (isEditing || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (DOM.passwordModal && DOM.passwordModal.style.display === 'flex') return;
+    if (DOM.jumpModal && DOM.jumpModal.style.display === 'flex') return;
+    if (DOM.shortcutsModal && DOM.shortcutsModal.style.display === 'flex') return;
+    toggleMagnifier();
+  });
+}
+
+function toggleMagnifier() {
+  magnifier.active = !magnifier.active;
+  DOM.btnToggleMagnifier?.classList.toggle('active', magnifier.active);
+  magnifier.lens?.classList.toggle('visible', magnifier.active);
+  magnifier.shield?.classList.toggle('visible', magnifier.active);
+  // Blokir semua cara membalik halaman selama kaca pembesar aktif
+  readerState.flipbookManager?.setFlipLocked(magnifier.active);
+  // Hentikan autoplay selama kaca pembesar aktif; lanjutkan lagi setelah dimatikan
+  if (magnifier.active && readerState.autoPlay) {
+    stopAutoPlay();
+    readerState.autoPlay = false;
+    DOM.btnToggleAutoPlay?.classList.remove('active');
+    if (DOM.iconAutoPlayPlay) DOM.iconAutoPlayPlay.style.display = 'block';
+    if (DOM.iconAutoPlayPause) DOM.iconAutoPlayPause.style.display = 'none';
+  }
+  if (magnifier.active) {
+    showToast('Kaca pembesar aktif. Scroll mouse untuk zoom, klik untuk menutup.');
+  } else {
+    magnifier.lens.style.backgroundImage = 'none';
+    magnifier.zoom = MAGNIFIER_ZOOM; // reset zoom untuk pemakaian berikutnya
+  }
+}
+
+function moveMagnifier(clientX, clientY) {
+  const lens = magnifier.lens;
+  const viewport = magnifier.viewportEl;
+  if (!lens || !viewport) return;
+
+  // Lensa hanya aktif di atas area baca
+  const rect = viewport.getBoundingClientRect();
+  const inside = clientX >= rect.left && clientX <= rect.right &&
+                 clientY >= rect.top && clientY <= rect.bottom;
+  if (!inside) {
+    lens.style.opacity = '0';
+    return;
+  }
+  lens.style.opacity = '1';
+
+  // Cari gambar halaman secara geometris (elementFromPoint gagal saat
+  // viewport pointer-events dinonaktifkan oleh kunci flip)
+  const pageImg = [...document.querySelectorAll('.page-image')].find((img) => {
+    if (!img.complete || img.naturalWidth === 0) return false;
+    const r = img.getBoundingClientRect();
+    return r.width > 0 && clientX >= r.left && clientX <= r.right &&
+           clientY >= r.top && r.bottom >= clientY;
+  });
+  if (!pageImg) {
+    lens.style.backgroundImage = 'none';
+    return;
+  }
+
+  // Posisi kursor relatif terhadap gambar, diskalakan ke ukuran natural
+  const imgRect = pageImg.getBoundingClientRect();
+  const rendered = pageImg.clientWidth * pageImg.clientHeight;
+  if (rendered === 0) return;
+  const scale = pageImg.naturalWidth / pageImg.clientWidth;
+
+  const relX = (clientX - imgRect.left) * scale;
+  const relY = (clientY - imgRect.top) * scale;
+  const bgW = pageImg.clientWidth * scale * magnifier.zoom;
+  const bgH = pageImg.clientHeight * scale * magnifier.zoom;
+
+  lens.style.backgroundImage = `url("${pageImg.src}")`;
+  lens.style.backgroundSize = `${bgW}px ${bgH}px`;
+  lens.style.backgroundPosition = `-${relX * magnifier.zoom - lens.clientWidth / 2}px -${relY * magnifier.zoom - lens.clientHeight / 2}px`;
+  lens.style.left = `${clientX - lens.clientWidth / 2}px`;
+  lens.style.top = `${clientY - lens.clientHeight / 2}px`;
+}
+
+// ============================================================================
 // EVENT LISTENERS
 // ============================================================================
 function setupEventListeners() {
@@ -375,7 +511,10 @@ function setupEventListeners() {
     showToast('Zoom diatur ulang ke 100%');
   });
 
-  // Focus Trapping and Restoration for Modals
+  // Magnifier (Kaca Pembesar)
+  setupMagnifier();
+
+// Focus Trapping and Restoration for Modals
   let previousActiveElement = null;
 
   function openModal(modalEl, initialFocusEl) {

@@ -837,6 +837,38 @@ button, input, select, textarea {
   background-color: var(--book-cover-color, #1e293b);
 }
 
+/* Magnifier lens (kaca pembesar) */
+.magnifier-lens {
+  position: fixed;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  border: 3px solid var(--accent-primary);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+  z-index: var(--z-toast-notification);
+  background-repeat: no-repeat;
+  display: none;
+  cursor: none;
+}
+
+.magnifier-lens.visible {
+  display: block;
+}
+
+/* Shield: menangkap semua klik saat kaca aktif (klik = tutup kaca, balik halaman terblokir) */
+.magnifier-shield {
+  position: fixed;
+  inset: 0;
+  z-index: 39; /* di bawah dock (40), di atas konten */
+  display: none;
+  cursor: none;
+}
+
+.magnifier-shield.visible {
+  display: block;
+}
+
 .page-content-wrapper {
   position: relative;
   width: 100%;
