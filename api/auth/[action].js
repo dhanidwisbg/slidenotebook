@@ -43,10 +43,12 @@ export default async function handler(req, res) {
   setCORSHeaders(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Path-based: /api/auth/login -> action=login; /api/auth/superadmin/login -> superadmin/login
+  // Path-based: /api/auth/login -> action=login. Superadmin sub-path datang
+  // sebagai ?sub=login dari rewrites vercel.json (dua segmen tak tertangkap [action])
   const rawPath = req.url.split('?')[0].replace(/^\/api\/auth\/?/, '').replace(/\.js$/, '');
   const pathParts = rawPath.split('/').filter(Boolean);
-  const action = pathParts[0] || req.query.action;
+  const action = req.query.action || pathParts[0];
+  const sub = req.query.sub || pathParts[1];
 
   // ── POST /api/auth/login ─ registered + approved admin (name + password)
   if (action === 'login' && req.method === 'POST') {
@@ -102,7 +104,7 @@ export default async function handler(req, res) {
   }
 
   // ── POST /api/auth/superadmin/login
-  if (action === 'superadmin' && pathParts[1] === 'login' && req.method === 'POST') {
+  if (action === 'superadmin' && sub === 'login' && req.method === 'POST') {
     const SUPERADMIN_ID = process.env.SUPERADMIN_ID || 'BNIW01';
     const SUPERADMIN_PASSWORD = process.env.SUPERADMIN_PASSWORD || '123123456456';
     const { adminId, password } = req.body || {};
@@ -118,7 +120,7 @@ export default async function handler(req, res) {
   }
 
   // ── POST /api/auth/superadmin/logout
-  if (action === 'superadmin' && pathParts[1] === 'logout' && req.method === 'POST') {
+  if (action === 'superadmin' && sub === 'logout' && req.method === 'POST') {
     res.setHeader('Set-Cookie', ['superadmin_token=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/']);
     return res.json({ success: true });
   }

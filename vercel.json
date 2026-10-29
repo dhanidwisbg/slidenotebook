@@ -19,6 +19,8 @@
   },
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/read", "destination": "/read.html" }
+    { "source": "/read", "destination": "/read.html" },
+    { "source": "/api/auth/superadmin/login", "destination": "/api/auth/superadmin?sub=login" },
+    { "source": "/api/auth/superadmin/logout", "destination": "/api/auth/superadmin?sub=logout" }
   ]
 }
