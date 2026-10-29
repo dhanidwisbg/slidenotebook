@@ -1,4 +1,4 @@
-// IndexedDB Manager for Handbook Flipbook
+// IndexedDB Manager for Handbook Digital
 // Separates pages and audio blobs for blazing performance (PRD FR-12)
 
 const DB_NAME = 'HandbookFlipbookDB';

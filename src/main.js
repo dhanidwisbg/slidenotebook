@@ -1,5 +1,5 @@
-// Handbook Flipbook - Main Application Orchestrator
-// Complies with PRD Handbook Flipbook v1.0 specifications
+// Handbook Digital - Main Application Orchestrator
+// Complies with PRD Handbook Digital v1.0 specifications
 
 import confetti from 'canvas-confetti';
 import {

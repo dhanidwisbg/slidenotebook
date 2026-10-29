@@ -67,7 +67,7 @@ export function generateSamplePages(themeColor = '#1e293b') {
       title: 'Sampul Belakang',
       tagline: 'AKHIR DOKUMEN',
       headline: 'Terima Kasih Telah Membaca',
-      subhead: 'Handbook Flipbook — Tampilan Asli, Rasa Buku Sungguhan.',
+      subhead: 'Handbook Digital — Tampilan Asli, Rasa Buku Sungguhan.',
       footer: '© 2026 PT Digital Edukasi Mandiri • Versi 1.0',
       type: 'back-cover'
     }

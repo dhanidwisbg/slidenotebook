@@ -207,6 +207,175 @@
   border: none;
 }
 
+/* Handbook list panel */
+.admin-hb-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  margin: 1rem 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-hb-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--text-main);
+}
+
+.admin-hb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Handbook catalog cards */
+.admin-hb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.admin-hb-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.2s ease;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  padding: 0;
+  font: inherit;
+}
+
+.admin-hb-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.admin-hb-card-cover {
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: var(--bg-surface-elevated);
+}
+
+.admin-hb-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-hb-card-cover .admin-hb-card-fallback {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.admin-hb-card-body {
+  padding: 0.9rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.admin-hb-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.35;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.admin-hb-card-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-hb-card-actions {
+  margin-top: auto;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.admin-hb-card-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 36px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  background: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.admin-hb-card-btn:hover {
+  background: var(--bg-surface-elevated);
+  border-color: var(--border-strong);
+}
+
+.admin-hb-card-btn.danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+
+.admin-hb-card-btn.danger:hover {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
+
+.admin-hb-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-hb-item:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+}
+
 .admin-hb-item.active {
   border-color: var(--accent-primary);
   background: var(--info-bg);

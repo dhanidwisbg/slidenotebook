@@ -1,4 +1,4 @@
-// Admin Portal Logic - Handbook Flipbook
+// Admin Portal Logic - Handbook Digital
 // Enforces server-side authentication and full handbook management
 
 import {
@@ -96,6 +96,8 @@ const DOM = {
   hbTotalCount: document.getElementById('hb-total-count'),
   hbList: document.getElementById('admin-hb-list'),
   btnNewHandbook: document.getElementById('btn-new-handbook'),
+  catalogView: document.getElementById('admin-catalog-view'),
+  editView: document.getElementById('admin-edit-view'),
 
   // Publish Modal extras
   directLinkInput: document.getElementById('direct-link-input'),
@@ -241,12 +243,23 @@ function showLogin() {
   DOM.adminMain.style.display = 'none';
 }
 
+function showCatalogView() {
+  DOM.catalogView.style.display = 'block';
+  DOM.editView.style.display = 'none';
+}
+
+function showEditView() {
+  DOM.catalogView.style.display = 'none';
+  DOM.editView.style.display = 'block';
+}
+
 async function showDashboard() {
   DOM.loginScreen.style.display = 'none';
   DOM.adminMain.style.display = 'block';
   DOM.adminUserEmail.textContent = adminState.user.email;
 
   await loadHandbookList();
+  showCatalogView();
 }
 
 // Load all handbooks and select the first one (or last active one)
@@ -273,10 +286,7 @@ async function loadHandbookList() {
 
     renderHandbookList();
 
-    // Select the active handbook or first
-    const activeId = localStorage.getItem('hfb_active_handbook_id');
-    const target = adminState.handbooks.find(h => h.id === activeId) || adminState.handbooks[0];
-    await selectHandbook(target.id);
+    // Stay on catalog; edit view opens when a handbook is chosen
   } catch (err) {
     showToast(`Error memuat daftar handbook: ${err.message}`);
   }
@@ -290,88 +300,123 @@ function renderHandbookList() {
   DOM.hbList.innerHTML = '';
 
   list.forEach(hb => {
-    const item = document.createElement('div');
-    item.className = `admin-hb-item${adminState.handbook?.id === hb.id ? ' active' : ''}`;
-    item.dataset.id = hb.id;
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'admin-hb-card';
+    card.dataset.id = hb.id;
+    card.setAttribute('aria-label', `Edit handbook ${hb.title || 'Untitled'}`);
 
-    const lockIcon = hb.hasPassword
-      ? `<svg class="admin-hb-item-lock" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`
+    const cover = hb.coverImage
+      ? `<img src="${hb.coverImage}" alt="" loading="lazy" />`
+      : `<span class="admin-hb-card-fallback">${escapeCardInitial(hb.title)}</span>`;
+    const coverStyle = hb.coverColor
+      ? ` style="background: linear-gradient(135deg, ${hb.coverColor}, ${shadeColor(hb.coverColor, -30)});"`
       : '';
 
-    item.innerHTML = `
-      ${lockIcon}
-      <span class="admin-hb-item-name" title="${hb.title}">${hb.title || 'Untitled'}</span>
-      <div class="admin-hb-item-actions">
-        <a href="/read.html?id=${hb.uniqueSlug || hb.id}" target="_blank" class="admin-hb-item-btn admin-hb-item-view" title="Buka Pembaca di Tab Baru">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-            <polyline points="15 3 21 3 21 9"></polyline>
-            <line x1="10" y1="14" x2="21" y2="3"></line>
-          </svg>
-        </a>
-        <button class="admin-hb-item-btn admin-hb-item-delete" title="Hapus Handbook" aria-label="Hapus Handbook" data-id="${hb.id}">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-          </svg>
-        </button>
+    const lockIcon = hb.hasPassword
+      ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`
+      : '';
+
+    card.innerHTML = `
+      <div class="admin-hb-card-cover"${coverStyle}>${cover}</div>
+      <div class="admin-hb-card-body">
+        <h3 class="admin-hb-card-title">${hb.title || 'Untitled'}</h3>
+        <div class="admin-hb-card-meta">
+          ${lockIcon}
+          <span>${hb.pageCount || 0} halaman</span>
+        </div>
+        <div class="admin-hb-card-actions">
+          <span class="admin-hb-card-btn" role="button" tabindex="0" data-action="edit" title="Edit Handbook">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            </svg>
+            <span>Edit</span>
+          </span>
+          <span class="admin-hb-card-btn danger" role="button" tabindex="0" data-action="delete" title="Hapus Handbook">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Hapus</span>
+          </span>
+        </div>
       </div>
     `;
 
-    // Click the item body area (not actions) to select
-    item.addEventListener('click', async (e) => {
-      if (e.target.closest('.admin-hb-item-actions')) return;
-      await selectHandbook(hb.id);
-    });
-
-    // Delete button: langsung hapus + toast "Batalkan" 6 detik sebelum dianggap final
-    item.querySelector('.admin-hb-item-delete').addEventListener('click', async (e) => {
-      e.stopPropagation();
-      let snapshot = null;
-      try {
-        // Simpan snapshot untuk undo (pages ber-imageUrl lolos tanpa re-upload)
-        snapshot = await fetchAdminHandbook(hb.id);
-        await deleteAdminHandbook(hb.id);
-        adminState.handbooks = adminState.handbooks.filter(h => h.id !== hb.id);
-        if (adminState.handbook?.id === hb.id) {
-          adminState.handbook = null;
-        }
-
-        if (adminState.handbooks.length === 0) {
-          await loadHandbookList(); // creates a default
-        } else {
-          renderHandbookList();
-          if (!adminState.handbook) {
-            await selectHandbook(adminState.handbooks[0].id);
-          }
-        }
-
-        showUndoToast(
-          `Handbook "${hb.title || 'Untitled'}" dihapus.`,
-          async () => {
-            try {
-              const restored = await createAdminHandbook({
-                title: snapshot.title,
-                subtitle: snapshot.subtitle,
-                orientation: snapshot.orientation,
-                coverColor: snapshot.coverColor,
-                pages: snapshot.pages || [],
-                readerPassword: snapshot.readerPassword || null
-              });
-              await loadHandbookList();
-              if (restored?.id) await selectHandbook(restored.id);
-            } catch (err) {
-              showToast(`Gagal memulihkan: ${err.message}`);
-            }
-          }
-        );
-      } catch (err) {
-        showToast(`Gagal menghapus: ${err.message}`);
+    // Card body click opens the editor; action buttons handled separately
+    card.addEventListener('click', async (e) => {
+      const action = e.target.closest('[data-action]');
+      if (!action) {
+        await selectHandbook(hb.id);
+        return;
       }
+      if (action.dataset.action === 'delete') await deleteHandbookWithConfirm(hb);
     });
 
-    DOM.hbList.appendChild(item);
+    DOM.hbList.appendChild(card);
   });
+}
+
+function escapeCardInitial(title) {
+  return (title || 'H').trim().charAt(0).toUpperCase() || 'H';
+}
+
+function shadeColor(hex, amount) {
+  try {
+    let r = parseInt(hex.slice(1, 3), 16);
+    let g = parseInt(hex.slice(3, 5), 16);
+    let b = parseInt(hex.slice(5, 7), 16);
+    const clamp = (v) => Math.max(0, Math.min(255, v));
+    r = clamp(r + amount); g = clamp(g + amount); b = clamp(b + amount);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  } catch (e) {
+    return hex;
+  }
+}
+
+async function deleteHandbookWithConfirm(hb) {
+  // Confirm before delete; undo toast remains as a second chance
+  if (!confirm(`Hapus handbook "${hb.title || 'Untitled'}"? Tindakan ini bisa dibatalkan lewat tombol Batalkan selama 6 detik setelah dihapus.`)) {
+    return;
+  }
+  let snapshot = null;
+  try {
+    // Simpan snapshot untuk undo (pages ber-imageUrl lolos tanpa re-upload)
+    snapshot = await fetchAdminHandbook(hb.id);
+    await deleteAdminHandbook(hb.id);
+    adminState.handbooks = adminState.handbooks.filter(h => h.id !== hb.id);
+    if (adminState.handbook?.id === hb.id) {
+      adminState.handbook = null;
+    }
+
+    if (adminState.handbooks.length === 0) {
+      await loadHandbookList(); // creates a default
+    } else {
+      renderHandbookList();
+    }
+
+    showUndoToast(
+      `Handbook "${hb.title || 'Untitled'}" dihapus.`,
+      async () => {
+        try {
+          const restored = await createAdminHandbook({
+            title: snapshot.title,
+            subtitle: snapshot.subtitle,
+            orientation: snapshot.orientation,
+            coverColor: snapshot.coverColor,
+            pages: snapshot.pages || [],
+            readerPassword: snapshot.readerPassword || null
+          });
+          await loadHandbookList();
+          if (restored?.id) await selectHandbook(restored.id);
+        } catch (err) {
+          showToast(`Gagal memulihkan: ${err.message}`);
+        }
+      }
+    );
+  } catch (err) {
+    showToast(`Gagal menghapus: ${err.message}`);
+  }
 }
 
 async function selectHandbook(id) {
@@ -382,6 +427,7 @@ async function selectHandbook(id) {
     renderPagesGrid();
     checkOrientationAlert();
     renderHandbookList(); // refresh active state
+    showEditView();
   } catch (err) {
     showToast(`Gagal memuat handbook: ${err.message}`);
   }
@@ -861,6 +907,11 @@ function setupEventListeners() {
 
   // New Handbook button
   if (DOM.btnNewHandbook) DOM.btnNewHandbook.addEventListener('click', createNewHandbook);
+
+  // Back to catalog
+  document.getElementById('btn-back-to-catalog')?.addEventListener('click', () => {
+    showCatalogView();
+  });
 
   // Logout
   DOM.btnLogout.addEventListener('click', async () => {

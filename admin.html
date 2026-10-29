@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Portal — Handbook Flipbook</title>
+    <title>Admin Portal — Handbook Digital</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23005E6A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -103,7 +103,7 @@
               </svg>
             </div>
             <div class="brand-title">
-              <span>Handbook Flipbook</span>
+              <span>Handbook Digital</span>
               <span class="brand-badge" style="background: var(--success-bg); color: var(--success); border-color: var(--success);">ADMIN</span>
             </div>
           </div>
@@ -161,35 +161,48 @@
           </div>
         </header>
 
-        <!-- Main Content -->
         <!-- ============================================================== -->
-        <!-- HANDBOOK LIST PANEL (Multi-Handbook Management)                -->
+        <!-- CATALOG VIEW (default after login)                              -->
         <!-- ============================================================== -->
-        <div class="admin-hb-panel" id="admin-hb-panel">
-          <div class="admin-hb-panel-header">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-                <path d="M6 2v20"/>
-              </svg>
-              <strong style="font-size: 0.88rem;">Daftar Handbook</strong>
-              <span class="brand-badge" id="hb-total-count" style="background: rgba(56,189,248,0.12); color: var(--accent-primary);">0</span>
+        <div id="admin-catalog-view" style="display: none;">
+          <main class="edit-container">
+            <div class="admin-hb-panel" id="admin-hb-panel">
+              <div class="admin-hb-panel-header">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                    <path d="M6 2v20"/>
+                  </svg>
+                  <strong style="font-size: 0.88rem;">Daftar Handbook</strong>
+                  <span class="brand-badge" id="hb-total-count" style="background: var(--info-bg); color: var(--accent-primary);">0</span>
+                </div>
+                <button class="btn-pill btn-publish-highlight" id="btn-new-handbook" style="font-size: 0.82rem; padding: 0.35rem 0.9rem;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>Buat Handbook Baru</span>
+                </button>
+              </div>
+              <div class="admin-hb-grid" id="admin-hb-list">
+                <!-- Dynamically populated handbook cards -->
+              </div>
             </div>
-            <button class="btn-pill btn-publish-highlight" id="btn-new-handbook" style="font-size: 0.82rem; padding: 0.35rem 0.9rem;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              <span>Buat Handbook Baru</span>
-            </button>
-          </div>
-          <div class="admin-hb-list" id="admin-hb-list">
-            <!-- Dynamically populated -->
-          </div>
+          </main>
         </div>
 
-        <!-- Main Content -->
+        <!-- ============================================================== -->
+        <!-- EDIT VIEW (opens when a handbook card is clicked)               -->
+        <!-- ============================================================== -->
+        <div id="admin-edit-view" style="display: none;">
         <main class="edit-container">
+          <button class="btn-pill" id="btn-back-to-catalog" style="margin-bottom: 1rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Kembali ke Katalog</span>
+          </button>
           <!-- Handbook Identity Card -->
           <section class="edit-header-card">
             <div class="meta-inputs-grid">
@@ -322,6 +335,7 @@
             </div>
           </section>
         </main>
+        </div>
       </div>
 
       <!-- ================================================================ -->

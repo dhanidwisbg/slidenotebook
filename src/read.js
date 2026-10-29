@@ -1,4 +1,4 @@
-// Pure Reader Script - Handbook Flipbook
+// Pure Reader Script - Handbook Digital
 // Zero editor code included. Read-only viewer.
 
 import confetti from 'canvas-confetti';
@@ -142,7 +142,7 @@ async function loadAndDisplayHandbook(password = null, directKey = null) {
 
 function renderBook() {
   const hb = readerState.handbook;
-  document.title = `${hb.title} — Handbook Flipbook`;
+  document.title = `${hb.title} — Handbook Digital`;
 
   DOM.readerHbTitle.textContent = hb.title || 'Handbook Digital';
   DOM.readerHbSubtitle.textContent = hb.subtitle || '';

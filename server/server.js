@@ -342,6 +342,7 @@ app.get('/api/admin/handbooks', requireAdminAuth, (req, res) => {
     subtitle: item.subtitle,
     orientation: item.orientation,
     coverColor: item.coverColor,
+    coverImage: (item.pages && item.pages.length > 0) ? (item.pages[0].imageUrl || null) : null,
     pageCount: item.pages ? item.pages.length : 0,
     isPublished: !!item.isPublished,
     isActive: item.isActive !== false,
